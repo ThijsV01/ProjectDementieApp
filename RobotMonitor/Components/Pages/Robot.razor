@@ -1,0 +1,31 @@
+@page "/robot"
+@inject IRobotMonitorService RobotService
+
+<h3>Robot Monitor</h3>
+
+<p>
+    Batterijstatus: 
+    <strong style="color:@BatteryColor">@batteryStatus mV</strong>
+</p>
+
+<progress max="12600" value="@batteryStatus"></progress>
+
+<br /><br />
+
+<button class="btn btn-warning" disabled>
+    Stop
+</button>
+
+@code {
+    private int batteryStatus;
+
+    protected override async Task OnInitializedAsync()
+    {
+        batteryStatus = await RobotService.GetBatteryStatusInMillivoltsAsync();
+    }
+
+    private string BatteryColor =>
+        batteryStatus < 3300 ? "red" :
+        batteryStatus < 8000 ? "orange" :
+        "green";
+}
