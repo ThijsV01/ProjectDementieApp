@@ -1,4 +1,4 @@
-public interface IRobotMonitorService
+public interface ISqlBatteryRepository
 {
     Task<int> GetBatteryStatusInMillivoltsAsync();
 }

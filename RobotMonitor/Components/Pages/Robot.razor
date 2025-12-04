@@ -1,5 +1,5 @@
 @page "/robot"
-@inject IRobotMonitorService RobotService
+@inject ISqlBatteryRepository SqlBatteryRepository
 
 <h3>Robot Monitor</h3>
 
@@ -21,7 +21,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        batteryStatus = await RobotService.GetBatteryStatusInMillivoltsAsync();
+        batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
     }
 
     private string BatteryColor =>
