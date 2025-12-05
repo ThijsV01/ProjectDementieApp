@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RobotMonitor", "RobotMonitor\RobotMonitor.csproj", "{E571D8BF-EF8D-42AE-91C5-1A98C204A72F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokemonOefening", "..\Software\PokemonOefening\PokemonOefening.csproj", "{0F245256-FF50-47A2-BF35-5112E9BECA16}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{E571D8BF-EF8D-42AE-91C5-1A98C204A72F}.Release|x64.Build.0 = Release|Any CPU
 		{E571D8BF-EF8D-42AE-91C5-1A98C204A72F}.Release|x86.ActiveCfg = Release|Any CPU
 		{E571D8BF-EF8D-42AE-91C5-1A98C204A72F}.Release|x86.Build.0 = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|x64.Build.0 = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Debug|x86.Build.0 = Debug|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|x64.ActiveCfg = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|x64.Build.0 = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|x86.ActiveCfg = Release|Any CPU
+		{0F245256-FF50-47A2-BF35-5112E9BECA16}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

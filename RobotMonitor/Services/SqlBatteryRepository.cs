@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.Data.SqlClient;
 public class SqlBatteryRepository : ISqlBatteryRepository
 {
@@ -20,9 +21,29 @@ public class SqlBatteryRepository : ISqlBatteryRepository
 
         if (await reader.ReadAsync())
         {
-            return reader.GetInt32(0);   // kolom 0 = Millivolts
+            return reader.GetInt32(0);
         }
 
-        return 0; // geen data in tabel
+        return 0;
+    }
+    public async void InsertBatteryLevel(int batteryValue, int robotId)
+    {
+        try
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using SqlCommand command = connection.CreateCommand();
+            command.CommandText = "INSERT INTO BatterijStatus (RobotId, Tijdstip, Percentage) VALUES (@RobotId, @Tijdstip, @Percentage)";
+            command.Parameters.Add("@RobotId", SqlDbType.Int).Value = robotId;
+            command.Parameters.Add("@Tijdstip", SqlDbType.DateTime).Value = DateTime.Now;
+            command.Parameters.Add("@Percentage", SqlDbType.Int).Value = batteryValue;
+
+            await command.ExecuteNonQueryAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error inserting battery level: " + ex.Message);
+        }
     }
 }

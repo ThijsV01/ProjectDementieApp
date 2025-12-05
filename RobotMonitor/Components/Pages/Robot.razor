@@ -4,7 +4,7 @@
 <h3>Robot Monitor</h3>
 
 <p>
-    Batterijstatus: 
+    Batterijstatus:
     <strong style="color:@BatteryColor">@batteryStatus mV</strong>
 </p>
 
@@ -21,11 +21,26 @@
 
     protected override async Task OnInitializedAsync()
     {
-        batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+        await base.OnInitializedAsync();
+
+    batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+
+    _ = Task.Run(UpdateBatteryLoopAsync);
+    }
+
+    private async Task UpdateBatteryLoopAsync()
+    {
+        while (true)
+        {
+            batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+            Console.WriteLine($"Latest battery: {batteryStatus}");
+            await InvokeAsync(StateHasChanged); // notify Blazor to rerender
+            await Task.Delay(5000);
+        }
     }
 
     private string BatteryColor =>
-        batteryStatus < 3300 ? "red" :
-        batteryStatus < 8000 ? "orange" :
-        "green";
+    batteryStatus < 3300 ? "red" :
+    batteryStatus < 8000 ? "orange" :
+    "green";
 }

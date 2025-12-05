@@ -7,12 +7,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 //------------------------------------------------------------------------------------------------------------------------
+builder.Services.AddSingleton<ISqlBatteryRepository>(provider =>
+    new SqlBatteryRepository("Server=aei-sql2.avans.nl,1443;Database=DB2242722;User Id=ITI2242722;Password=S8yeQ6W0; TrustServerCertificate=True; "));
+
 string clientId = "Robot-" + Guid.NewGuid().ToString();
 var mqttClient = SimpleMqttClient.CreateSimpleMqttClientForHiveMQ(clientId);
+
 builder.Services.AddSingleton(mqttClient);
+
 builder.Services.AddHostedService<MQTTMessageProcessingService>();
-builder.Services.AddScoped<ISqlBatteryRepository>(provider =>
-    new SqlBatteryRepository("Server=aei-sql2.avans.nl,1443;Database=DB2242722;User Id=ITI2242722;Password=S8yeQ6W0;"));
 
 //-------------------------------------------------------------------------------------------------------------------------
 var app = builder.Build();

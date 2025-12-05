@@ -8,15 +8,24 @@ public class MQTTMessageProcessingService : IHostedService
     {
         _simpleMqttClient=simpleMqttClient;
         _SQLBatteryRepository=sqlBatteryRepository;
-    }
-    public async Task StartAsync(CancellationToken cancellationToken)
-    {
+
         _simpleMqttClient.OnMessageReceived += (sender, args)=>
         {
             Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
-            _SQLBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+            if (args.Topic == "robot/2242722/battery")
+            {
+                if (int.TryParse(args.Message, out var batteryValue))
+                {
+                    int robotId=1;
+                    _SQLBatteryRepository.InsertBatteryLevel(batteryValue, robotId);
+                }
+            }
         };
-        await _simpleMqttClient.SubscribeToTopic("#");
+    }
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        
+        await _simpleMqttClient.SubscribeToTopic("robot/2242722/#");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
