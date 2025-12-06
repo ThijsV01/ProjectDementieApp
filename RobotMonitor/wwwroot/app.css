@@ -58,3 +58,43 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+
+.battery {
+    width: 80px;           /* wider than before */
+    height: 30px;          /* taller */
+    border: 2px solid #333;
+    border-radius: 6px;    /* rounded corners */
+    position: relative;
+    display: flex;
+    align-items: center;
+    overflow: hidden;      /* prevents text from spilling out */
+    background-color: #eee; /* optional background color */
+}
+
+.battery::after {
+    content: "";
+    position: absolute;
+    top: 8px;
+    right: -8px;           /* outside the main body */
+    width: 6px;             /* terminal width */
+    height: 14px;           /* terminal height */
+    background: #333;
+    border-radius: 2px;
+}
+
+.battery-level {
+    height: 100%;
+    display: flex;
+    justify-content: center;  /* center text horizontally */
+    align-items: center;      /* center text vertically */
+    border-radius: 4px;       /* rounded inside fill */
+    transition: width 0.4s ease, background-color 0.3s ease;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.battery-text {
+    position: relative;
+    z-index: 1;
+}

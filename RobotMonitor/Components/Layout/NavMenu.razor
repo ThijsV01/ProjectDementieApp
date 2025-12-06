@@ -1,4 +1,9 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject ISqlBatteryRepository SqlBatteryRepository
+@using SimpleMqtt
+@inject SimpleMqttClient mqttClient
+@rendermode InteractiveServer
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">RobotMonitor</a>
     </div>
@@ -30,6 +35,26 @@
                 <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Robot
             </NavLink>
         </div>
+        <div class="px-3 mt-3">
+            <button class="btn btn-success w-100" @onclick="StartRobot">Start Robot</button>
+        </div>
+
+        <div class="px-3 mt-2">
+            <button class="btn btn-danger w-100" @onclick="StopRobot">Stop Robot</button>
+        </div>
     </nav>
+
 </div>
 
+
+@code {
+    private async Task StartRobot()
+    {
+        await mqttClient.PublishMessage("1", "robot/2242722/command/start");
+    }
+
+    private async Task StopRobot()
+    {
+        await mqttClient.PublishMessage("1", "robot/2242722/command/stop");
+    }
+}

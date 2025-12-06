@@ -15,7 +15,7 @@ var mqttClient = SimpleMqttClient.CreateSimpleMqttClientForHiveMQ(clientId);
 
 builder.Services.AddSingleton(mqttClient);
 
-builder.Services.AddHostedService<MQTTMessageProcessingService>();
+builder.Services.AddHostedService<MQTTBatteryMessageProcessing>();
 
 //-------------------------------------------------------------------------------------------------------------------------
 var app = builder.Build();

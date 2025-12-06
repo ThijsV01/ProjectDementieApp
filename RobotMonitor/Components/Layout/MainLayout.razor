@@ -1,4 +1,7 @@
 ﻿@inherits LayoutComponentBase
+@inject ISqlBatteryRepository SqlBatteryRepository
+@using SimpleMqtt
+@inject SimpleMqttClient mqttClient
 
 <div class="page">
     <div class="sidebar">
@@ -7,7 +10,11 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <div class="battery">
+                <div class="battery-level" style="width:@batteryStatus%; background:@BatteryColor">
+                    <span class="battery-text">@batteryStatus%</span>
+                </div>
+            </div>
         </div>
 
         <article class="content px-4">
@@ -21,3 +28,15 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
+@code {
+    private int batteryStatus;
+    protected override async Task OnInitializedAsync()
+    {
+        batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+    }
+    private string BatteryColor =>
+    batteryStatus < 10 ? "red" :
+    batteryStatus < 20 ? "orange" :
+    "green";
+
+}

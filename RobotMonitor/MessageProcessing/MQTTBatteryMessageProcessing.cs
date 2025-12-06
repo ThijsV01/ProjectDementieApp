@@ -1,10 +1,10 @@
 using SimpleMqtt;
-public class MQTTMessageProcessingService : IHostedService
+public class MQTTBatteryMessageProcessing : IHostedService
 {
     private SimpleMqttClient _simpleMqttClient;
     private ISqlBatteryRepository _SQLBatteryRepository;
 
-    public MQTTMessageProcessingService(SimpleMqttClient simpleMqttClient, ISqlBatteryRepository sqlBatteryRepository)
+    public MQTTBatteryMessageProcessing(SimpleMqttClient simpleMqttClient, ISqlBatteryRepository sqlBatteryRepository)
     {
         _simpleMqttClient=simpleMqttClient;
         _SQLBatteryRepository=sqlBatteryRepository;
@@ -17,6 +17,9 @@ public class MQTTMessageProcessingService : IHostedService
                 if (int.TryParse(args.Message, out var batteryValue))
                 {
                     int robotId=1;
+                    int maxValue = 8600;
+                    batteryValue = (int)((double)batteryValue / maxValue * 100);
+                    Console.WriteLine(batteryValue);
                     _SQLBatteryRepository.InsertBatteryLevel(batteryValue, robotId);
                 }
             }
@@ -25,7 +28,7 @@ public class MQTTMessageProcessingService : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         
-        await _simpleMqttClient.SubscribeToTopic("robot/2242722/#");
+        await _simpleMqttClient.SubscribeToTopic("robot/2242722/battery");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
