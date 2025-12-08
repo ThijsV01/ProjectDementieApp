@@ -1,0 +1,41 @@
+﻿@page "/"
+@inject ISqlCommandoRepository SqlCommandoRepository
+
+<PageTitle>Dashboard</PageTitle>
+@if (commands == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (commands.Count == 0)
+{
+    <p>No commands found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Command</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (CommandItem command in commands)
+            {
+                <tr>
+                    <td>@command.Datum.ToString("yyyy-MM-dd")</td>
+                    <td>@command.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                    <td>@command.Soort</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<CommandItem>? commands;
+    protected override async Task OnInitializedAsync()
+    {
+        commands = await SqlCommandoRepository.GetCommands();
+    }
+}

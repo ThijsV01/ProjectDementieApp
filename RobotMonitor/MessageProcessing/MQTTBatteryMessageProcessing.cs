@@ -28,7 +28,7 @@ public class MQTTBatteryMessageProcessing : IHostedService
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         
-        await _simpleMqttClient.SubscribeToTopic("robot/2242722/battery");
+        await _simpleMqttClient.SubscribeToTopic("robot/2242722/#");
     }
 
     public Task StopAsync(CancellationToken cancellationToken)

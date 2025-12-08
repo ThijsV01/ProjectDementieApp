@@ -9,14 +9,22 @@
     </div>
 
     <main>
-        <div class="top-row px-4">
-            <div class="battery">
-                <div class="battery-level" style="width:@batteryStatus%; background:@BatteryColor">
-                    <span class="battery-text">@batteryStatus%</span>
-                </div>
-            </div>
-        </div>
+        <div class="top-row px-4 d-flex align-items-center">
+            <button class="btn btn-link p-0 me-3" title="@batteryStatus%">
+                <i class="@BatteryIcon battery-vertical" style="@BatteryColor; font-size: 3rem;" >
+                <span class="battery-text-inside-vertical">@batteryStatus</span>
+                </i>
+            </button>
+            <!-- Question mark icon -->
+            <button class="btn btn-link p-0 me-3" title="Help">
+                <i class="fas fa-question-circle fa-3x" style="color:rgb(70, 70, 70); font-size: 3rem;"></i>
+            </button>
 
+            <!-- Wrench icon -->
+            <button class="btn btn-link p-0" title="Settings">
+                <i class="fas fa-wrench fa-3x" style="color:rgb(70, 70, 70); font-size: 3rem;"></i>
+            </button>
+        </div>
         <article class="content px-4">
             @Body
         </article>
@@ -35,8 +43,14 @@
         batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
     }
     private string BatteryColor =>
-    batteryStatus < 10 ? "red" :
-    batteryStatus < 20 ? "orange" :
-    "green";
+    batteryStatus < 25 ? "color:red" :
+    "color:rgb(70, 70, 70)"; 
+
+    private string BatteryIcon =>
+    batteryStatus < 20 ? "fas fa-battery-empty" :
+    batteryStatus < 40 ? "fas fa-battery-quarter" :
+    batteryStatus < 60 ? "fas fa-battery-half" :
+    batteryStatus < 80 ? "fas fa-battery-three-quarters" :
+    "fas fa-battery-full";
 
 }

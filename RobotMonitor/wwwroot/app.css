@@ -59,42 +59,27 @@ h1:focus {
     text-align: start;
 }
 
-.battery {
-    width: 80px;           /* wider than before */
-    height: 30px;          /* taller */
-    border: 2px solid #333;
-    border-radius: 6px;    /* rounded corners */
+/* Rotate the battery icon vertically */
+.battery-vertical {
+    font-size: 5rem;     /* Bigger battery */
+    transform: rotate(-90deg);
+}
+
+/* Container required for overlay */
+.battery-container-vertical {
     position: relative;
-    display: flex;
-    align-items: center;
-    overflow: hidden;      /* prevents text from spilling out */
-    background-color: #eee; /* optional background color */
+    display: inline-block;
 }
 
-.battery::after {
-    content: "";
+/* Percentage inside rotated battery */
+.battery-text-inside-vertical {
     position: absolute;
-    top: 8px;
-    right: -8px;           /* outside the main body */
-    width: 6px;             /* terminal width */
-    height: 14px;           /* terminal height */
-    background: #333;
-    border-radius: 2px;
-}
-
-.battery-level {
-    height: 100%;
-    display: flex;
-    justify-content: center;  /* center text horizontally */
-    align-items: center;      /* center text vertically */
-    border-radius: 4px;       /* rounded inside fill */
-    transition: width 0.4s ease, background-color 0.3s ease;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(90deg); /* Counter-rotate text */
     color: white;
     font-weight: bold;
-    font-size: 14px;
-}
-
-.battery-text {
-    position: relative;
-    z-index: 1;
+    font-size: 1rem;
+    text-shadow: 0 0 3px black;
+    pointer-events: none;
 }
