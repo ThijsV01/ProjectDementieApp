@@ -1,5 +1,38 @@
 ﻿@page "/interactions"
+@inject ISqlInteractionMomentsRepository SqlInteractionMomentsRepository
 
 <PageTitle>Interactions</PageTitle>
 
-
+@if (interactionMoments == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (interactionMoments.Count == 0)
+{
+    <p>No commands found.</p>
+}
+else
+{
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Interaction Moments</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (TimeSpan interactioMoment in interactionMoments)
+            {
+                <tr>
+                    <td>@interactioMoment.ToString(@"hh\:mm\:ss")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<TimeSpan>? interactionMoments;
+    protected override async Task OnInitializedAsync()
+    {
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+    }
+}

@@ -1,4 +1,4 @@
 public interface ISqlInteractionMomentsRepository
 {
-    public void SelectInteractionMoments();
+    Task<List<TimeSpan>> SelectInteractionMoments();
 }

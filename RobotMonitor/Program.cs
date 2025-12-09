@@ -11,6 +11,9 @@ builder.Services.AddSingleton<ISqlBatteryRepository>(provider =>
     new SqlBatteryRepository("Server=aei-sql2.avans.nl,1443;Database=DB2242722;User Id=ITI2242722;Password=S8yeQ6W0; TrustServerCertificate=True; "));
 builder.Services.AddSingleton<ISqlCommandoRepository>(provider =>
     new SqlCommandoRepository("Server=aei-sql2.avans.nl,1443;Database=DB2242722;User Id=ITI2242722;Password=S8yeQ6W0; TrustServerCertificate=True; "));
+builder.Services.AddSingleton<ISqlInteractionMomentsRepository>(provider =>
+    new SqlInteractionMomentsRepository("Server=aei-sql2.avans.nl,1443;Database=DB2242722;User Id=ITI2242722;Password=S8yeQ6W0; TrustServerCertificate=True; "));
+
 string clientId = "Robot-" + Guid.NewGuid().ToString();
 var mqttClient = SimpleMqttClient.CreateSimpleMqttClientForHiveMQ(clientId);
 
@@ -18,6 +21,8 @@ builder.Services.AddSingleton(mqttClient);
 
 builder.Services.AddHostedService<MQTTBatteryMessageProcessing>();
 builder.Services.AddHostedService<MQTTCommandMessageProcessing>();
+builder.Services.AddHostedService<MQTTInteractionMomentsMessageProcessing>();
+builder.Services.AddHostedService<MQTTMessageSending>();
 
 //-------------------------------------------------------------------------------------------------------------------------
 var app = builder.Build();
