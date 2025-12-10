@@ -4,49 +4,77 @@
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 <PageTitle>Interactions</PageTitle>
+<div class="container">
+    <!-- Bovenste rij met twee blokken -->
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="card p-3">
+                @if (interactionMoments == null)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else if (interactionMoments.Count == 0)
+                {
+                    <p>No commands found.</p>
+                }
+                else
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Interaction Moments</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (InteractieMoment interactionMoment in interactionMoments)
+                            {
+                                <tr>
+                                    <td>@interactionMoment.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger"
+                                            @onclick="() => DeleteInteraction(interactionMoment.InteractieID)">
+                                            Delete
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                            <tr>
 
-@if (interactionMoments == null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (interactionMoments.Count == 0)
-{
-    <p>No commands found.</p>
-}
-else
-{
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Interaction Moments</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (InteractieMoment interactionMoment in interactionMoments)
-            {
-                <tr>
-                    <td>@interactionMoment.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                    <td>
-                        <button class="btn btn-sm btn-danger"
-                            @onclick="() => DeleteInteraction(interactionMoment.InteractieID)">
-                            Delete
-                        </button>
-                    </td>
-                </tr>
-            }
-            <tr>
+                                <td colspan="2">
+                                    <input type="time" @bind="newTime" class="form-control" />
+                                    <button class="btn btn-sm btn-primary mt-1 w-100 h-100"
+                                        @onclick="() => AddInteractionWithTime(interactionMoments[0].RobotID)">
+                                        Add
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                }
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Grafiek met interactiemomenten</h5>
+            </div>
+        </div>
+    </div>
 
-                <td colspan="2">
-                    <input type="time" @bind="newTime" class="form-control" />
-                    <button class="btn btn-sm btn-primary mt-1"
-                        @onclick="() => AddInteractionWithTime(interactionMoments[0].RobotID)">
-                        Add
-                    </button>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-}
+    <!-- Onderste rij met twee blokken -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Gemiddelde reactiesnelheid of correcte vragen of iets komt hier in een grafiek</h5>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <h5>Alle activiteiten in een tabel. je kunt ook selecteren welke activiteiten er gebruikt moeten worden bij de interactie</h5>
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     private List<InteractieMoment>? interactionMoments;
     protected override async Task OnInitializedAsync()
