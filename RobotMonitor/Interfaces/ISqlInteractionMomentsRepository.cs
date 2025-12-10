@@ -1,4 +1,6 @@
 public interface ISqlInteractionMomentsRepository
 {
-    Task<List<TimeSpan>> SelectInteractionMoments();
+    Task<List<InteractieMoment>> SelectInteractionMoments();
+    void DeleteMoment(int id);
+    void AddMoment(int id,TimeOnly time);
 }

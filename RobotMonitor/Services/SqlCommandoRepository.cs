@@ -17,7 +17,7 @@ public class SqlCommandoRepository : ISqlCommandoRepository
         await connection.OpenAsync();
 
         using SqlCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP 5 * FROM Commando ORDER BY Tijdstip DESC;";
+        command.CommandText = "SELECT TOP 5 * FROM Commando ORDER BY Datum DESC, Tijdstip DESC;";
 
         using SqlDataReader reader = await command.ExecuteReaderAsync();
 
@@ -31,7 +31,6 @@ public class SqlCommandoRepository : ISqlCommandoRepository
             };
             commands.Add(item);
         }
-
         return commands;
     }
     public async void InsertCommand(string commandUsed, int robotId)

@@ -41,6 +41,18 @@
     protected override async Task OnInitializedAsync()
     {
         batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+
+        mqttClient.OnMessageReceived += async (sender, args) =>
+        {
+            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
+
+            if (args.Topic!.StartsWith("robot/2242722/battery"))
+            {
+                await Task.Delay(50);
+                batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync();
+                await InvokeAsync(StateHasChanged);
+            }
+        };
     }
     private string BatteryColor =>
     batteryStatus < 25 ? "color:red" :

@@ -14,9 +14,11 @@ public class MQTTBatteryMessageProcessing : IHostedService
             Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
             if (args.Topic == "robot/2242722/battery")
             {
-                if (int.TryParse(args.Message, out var batteryValue))
+                string[] parts = args.Message!.Split(';');
+
+                if (int.TryParse(parts[1], out var batteryValue))
                 {
-                    int robotId=1;
+                    int robotId=int.Parse(parts[0]);
                     int maxValue = 8600;
                     batteryValue = (int)((double)batteryValue / maxValue * 100);
                     Console.WriteLine(batteryValue);

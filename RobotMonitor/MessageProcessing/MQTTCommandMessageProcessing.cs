@@ -14,13 +14,11 @@ public class MQTTCommandMessageProcessing : IHostedService
             Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
             if (args.Topic == "robot/2242722/command/start")
             {
-                int robotId = 1;
-                _SQLCommandoRepository.InsertCommand("Robot has been started. It will drive at the interactiontimes.", robotId);
+                _SQLCommandoRepository.InsertCommand("Robot has been started. It will drive at the interactiontimes.", int.Parse(args.Message!));
             }
             if (args.Topic == "robot/2242722/command/stop")
             {
-                int robotId = 1;
-                _SQLCommandoRepository.InsertCommand("Robot has been stopped. Click start if it should drive at the interactiontimes.", robotId);
+                _SQLCommandoRepository.InsertCommand("Robot has been stopped. Click start if it should drive at the interactiontimes.", int.Parse(args.Message!));
             }
         };
     }

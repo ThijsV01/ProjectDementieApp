@@ -14,18 +14,20 @@ public class MQTTInteractionMomentsMessageProcessing : IHostedService
             Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
             if (args.Topic == "robot/2242722/interactionmoment/add")
             {
-                // int robotId = 1;
-                // _SQLInteractionMomentsRepository.InsertMoment();
+                string[] parts = args.Message!.Split(';');
+
+                if (int.TryParse(parts[0], out var robotID))
+                {
+                    TimeOnly time = TimeOnly.Parse(parts[1]);
+                    _SQLInteractionMomentsRepository.AddMoment(robotID,time);
+                }
             }
             if (args.Topic == "robot/2242722/interactionmoment/delete")
             {
-                // int robotId = 1;
-                // _SQLInteractionMomentsRepository.DeleteMoment();
-            }
-            if (args.Topic == "robot/2242722/interactionmoment/edit")
-            {
-                // int robotId = 1;
-                // _SQLInteractionMomentsRepository.EditMoment();
+                if (int.TryParse(args.Message, out var interactionMomentId))
+                {
+                    _SQLInteractionMomentsRepository.DeleteMoment(interactionMomentId);
+                }
             }
         };
     }

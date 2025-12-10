@@ -1,5 +1,8 @@
 ﻿@page "/"
+@using SimpleMqtt
 @inject ISqlCommandoRepository SqlCommandoRepository
+@rendermode InteractiveServer
+@inject SimpleMqttClient mqttClient
 
 <PageTitle>Dashboard</PageTitle>
 @if (commands == null)
@@ -37,5 +40,17 @@ else
     protected override async Task OnInitializedAsync()
     {
         commands = await SqlCommandoRepository.GetCommands();
+
+        mqttClient.OnMessageReceived += async (sender, args) =>
+        {
+            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
+
+            if (args.Topic!.StartsWith("robot/2242722/command/"))
+            {
+                await Task.Delay(50);
+                commands = await SqlCommandoRepository.GetCommands();
+                await InvokeAsync(StateHasChanged);
+            }
+        };
     }
 }

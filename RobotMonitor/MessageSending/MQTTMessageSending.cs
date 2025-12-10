@@ -16,11 +16,12 @@ public class MQTTMessageSending : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            var times = await _sqlInteractionMomentsRepository.SelectInteractionMoments();
+            List<InteractieMoment> interactiemomenten = await _sqlInteractionMomentsRepository.SelectInteractionMoments();
             var now = DateTime.Now.TimeOfDay;
 
-            foreach (var time in times)
+            foreach (var interactieMoment in interactiemomenten)
             {
+                var time=interactieMoment.Tijdstip;
                 if (now >= time && !completedTimes.Contains(time))
                 {
                     await _simpleMqttClient.PublishMessage(time.ToString(), "robot/2242722/interactionmoment");

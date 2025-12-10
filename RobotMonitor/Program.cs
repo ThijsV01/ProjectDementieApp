@@ -1,5 +1,6 @@
 using RobotMonitor.Components;
 using SimpleMqtt;
+using MudBlazor.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ builder.Services.AddHostedService<MQTTBatteryMessageProcessing>();
 builder.Services.AddHostedService<MQTTCommandMessageProcessing>();
 builder.Services.AddHostedService<MQTTInteractionMomentsMessageProcessing>();
 builder.Services.AddHostedService<MQTTMessageSending>();
+
+builder.Services.AddMudServices();
 
 //-------------------------------------------------------------------------------------------------------------------------
 var app = builder.Build();

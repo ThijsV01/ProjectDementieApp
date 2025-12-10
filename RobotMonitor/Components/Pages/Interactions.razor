@@ -1,6 +1,8 @@
 ﻿@page "/interactions"
 @inject ISqlInteractionMomentsRepository SqlInteractionMomentsRepository
-
+@using SimpleMqtt
+@inject SimpleMqttClient mqttClient
+@rendermode InteractiveServer
 <PageTitle>Interactions</PageTitle>
 
 @if (interactionMoments == null)
@@ -20,19 +22,56 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (TimeSpan interactioMoment in interactionMoments)
+            @foreach (InteractieMoment interactionMoment in interactionMoments)
             {
                 <tr>
-                    <td>@interactioMoment.ToString(@"hh\:mm\:ss")</td>
+                    <td>@interactionMoment.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger"
+                            @onclick="() => DeleteInteraction(interactionMoment.InteractieID)">
+                            Delete
+                        </button>
+                    </td>
                 </tr>
             }
+            <tr>
+
+                <td colspan="2">
+                    <input type="time" @bind="newTime" class="form-control" />
+                    <button class="btn btn-sm btn-primary mt-1"
+                        @onclick="() => AddInteractionWithTime(interactionMoments[0].RobotID)">
+                        Add
+                    </button>
+                </td>
+            </tr>
         </tbody>
     </table>
 }
 @code {
-    private List<TimeSpan>? interactionMoments;
+    private List<InteractieMoment>? interactionMoments;
     protected override async Task OnInitializedAsync()
     {
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+    }
+
+    private async Task DeleteInteraction(int id)
+    {
+        await mqttClient.PublishMessage($"{id}", "robot/2242722/interactionmoment/delete");
+        // Refresh list
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+    }
+    private TimeOnly? newTime;
+
+    private async Task AddInteractionWithTime(int robotID)
+    {
+        if (!newTime.HasValue)
+        {
+            return;
+        }
+        string payload = $"{robotID};{newTime.Value:HH:mm:ss}";
+        await mqttClient.PublishMessage(payload, $"robot/2242722/interactionmoment/add");
+        newTime = null;
+        // Refresh list
         interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
     }
 }
