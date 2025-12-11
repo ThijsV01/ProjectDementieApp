@@ -20,16 +20,16 @@ else
             <tr>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Command</th>
+                <th>Obstacle distance</th>
             </tr>
         </thead>
         <tbody>
             @foreach (SensorMeting meting in ObstacleDistances)
             {
                 <tr>
-                    <td>@meting.Datum.ToString("yyyy-MM-dd")</td>
+                    <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
                     <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                    <td>@meting.Waarde</td>
+                    <td>@meting.Waarde cm</td>
                 </tr>
             }
         </tbody>
@@ -51,16 +51,21 @@ else
             <tr>
                 <th>Date</th>
                 <th>Time</th>
-                <th>Command</th>
+                <th>Detection state</th>
             </tr>
         </thead>
         <tbody>
             @foreach (SensorMeting meting in PIRMotionState)
             {
                 <tr>
-                    <td>@meting.Datum.ToString("yyyy-MM-dd")</td>
+                    <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
                     <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                    <td>@meting.Waarde</td>
+                    @if(meting.Waarde==0){
+                        <td>No human detected</td>
+                    }else if(meting.Waarde==1){
+                        <td>Human detected</td>
+                    }
+                    
                 </tr>
             }
         </tbody>

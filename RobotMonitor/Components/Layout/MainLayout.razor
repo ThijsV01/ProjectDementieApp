@@ -1,7 +1,5 @@
 ﻿@inherits LayoutComponentBase
-@using SimpleMqtt
-@inject ISqlSensorRepository SqlSensorRepository
-@inject SimpleMqttClient mqttClient
+
 
 <div class="page">
     <div class="sidebar">
@@ -10,18 +8,6 @@
 
     <main>
         <div class="top-row px-4 d-flex align-items-center">
-            <p>Last registered sensordata: @if (PIRMotionState == null || PIRMotionState.Count == 0)
-                                {
-                    <span>No sensor data available</span>
-                }
-                                else
-                {
-                    <span>
-                        @PIRMotionState[0].Datum.ToString("yyyy-MM-dd")
-                        @PIRMotionState[0].Tijdstip.ToString(@"hh\:mm\:ss")
-                    </span>
-                }
-            </p>
         </div>
         <article class="content px-4">
             @Body
@@ -34,22 +20,3 @@
     <a href="." class="reload">Reload</a>
     <span class="dismiss">🗙</span>
 </div>
-@code {
-    private List<SensorMeting>? PIRMotionState;
-    protected override async Task OnInitializedAsync()
-    {
-        PIRMotionState = await SqlSensorRepository.SelectSensorDataPIRMotion(1);
-
-        mqttClient.OnMessageReceived += async (sender, args) =>
-        {
-            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
-
-            if (args.Topic!.StartsWith("robot/2242722/sensor/"))
-            {
-                await Task.Delay(50);
-                PIRMotionState = await SqlSensorRepository.SelectSensorDataPIRMotion(1);
-                await InvokeAsync(StateHasChanged);
-            }
-        };
-    }
-}
