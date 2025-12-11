@@ -79,14 +79,14 @@
     private List<InteractieMoment>? interactionMoments;
     protected override async Task OnInitializedAsync()
     {
-        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
     }
 
     private async Task DeleteInteraction(int id)
     {
         await mqttClient.PublishMessage($"{id}", "robot/2242722/interactionmoment/delete");
         // Refresh list
-        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
     }
     private TimeOnly? newTime;
 
@@ -100,6 +100,6 @@
         await mqttClient.PublishMessage(payload, $"robot/2242722/interactionmoment/add");
         newTime = null;
         // Refresh list
-        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments();
+        interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
     }
 }

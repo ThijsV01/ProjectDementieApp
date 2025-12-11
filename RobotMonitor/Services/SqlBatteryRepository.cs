@@ -9,7 +9,7 @@ public class SqlBatteryRepository : ISqlBatteryRepository
         _connectionString = connectionString;
     }
 
-    public async Task<int> GetBatteryStatusInMillivoltsAsync()
+    public async Task<int> GetBatteryStatusInMillivoltsAsync(int robotID)
     {
         using SqlConnection connection = new SqlConnection(_connectionString);
         await connection.OpenAsync();

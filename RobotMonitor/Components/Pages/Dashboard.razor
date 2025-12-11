@@ -68,7 +68,7 @@
     private List<CommandItem>? commands;
     protected override async Task OnInitializedAsync()
     {
-        commands = await SqlCommandoRepository.GetCommands();
+        commands = await SqlCommandoRepository.GetCommands(1);
 
         mqttClient.OnMessageReceived += async (sender, args) =>
         {
@@ -77,7 +77,7 @@
             if (args.Topic!.StartsWith("robot/2242722/command/"))
             {
                 await Task.Delay(50);
-                commands = await SqlCommandoRepository.GetCommands();
+                commands = await SqlCommandoRepository.GetCommands(1);
                 await InvokeAsync(StateHasChanged);
             }
         };

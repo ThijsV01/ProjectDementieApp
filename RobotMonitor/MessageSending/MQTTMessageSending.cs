@@ -16,7 +16,7 @@ public class MQTTMessageSending : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
-            List<InteractieMoment> interactiemomenten = await _sqlInteractionMomentsRepository.SelectInteractionMoments();
+            List<InteractieMoment> interactiemomenten = await _sqlInteractionMomentsRepository.SelectInteractionMoments(1);
             var now = DateTime.Now.TimeOfDay;
 
             foreach (var interactieMoment in interactiemomenten)

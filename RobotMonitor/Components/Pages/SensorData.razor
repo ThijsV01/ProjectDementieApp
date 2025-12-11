@@ -1,0 +1,90 @@
+@page "/sensordata"
+@using SimpleMqtt
+@inject ISqlSensorRepository SqlSensorRepository
+@rendermode InteractiveServer
+@inject SimpleMqttClient mqttClient
+
+<PageTitle>Sensor data</PageTitle>
+@if (ObstacleDistances == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (ObstacleDistances.Count == 0)
+{
+    <p>No sensor data found.</p>
+}
+else
+{
+    <table class="table table-striped mb-0" style="height:32vh;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Command</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SensorMeting meting in ObstacleDistances)
+            {
+                <tr>
+                    <td>@meting.Datum.ToString("yyyy-MM-dd")</td>
+                    <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                    <td>@meting.Waarde</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (PIRMotionState == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (PIRMotionState.Count == 0)
+{
+    <p>No sensor data found.</p>
+}
+else
+{
+    <table class="table table-striped mb-0" style="height:32vh;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Command</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (SensorMeting meting in PIRMotionState)
+            {
+                <tr>
+                    <td>@meting.Datum.ToString("yyyy-MM-dd")</td>
+                    <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                    <td>@meting.Waarde</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+@code {
+    private List<SensorMeting>? ObstacleDistances;
+    private List<SensorMeting>? PIRMotionState;
+    protected override async Task OnInitializedAsync()
+    {
+        ObstacleDistances = await SqlSensorRepository.SelectSensorDataObstacleDistance(1);
+        PIRMotionState = await SqlSensorRepository.SelectSensorDataPIRMotion(1);
+
+        mqttClient.OnMessageReceived += async (sender, args) =>
+        {
+            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
+
+            if (args.Topic!.StartsWith("robot/2242722/sensor/"))
+            {
+                await Task.Delay(50);
+                ObstacleDistances = await SqlSensorRepository.SelectSensorDataObstacleDistance(1);
+                PIRMotionState = await SqlSensorRepository.SelectSensorDataPIRMotion(1);
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+    }
+}

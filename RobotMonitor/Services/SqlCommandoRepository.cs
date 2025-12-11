@@ -9,7 +9,7 @@ public class SqlCommandoRepository : ISqlCommandoRepository
         _connectionString = connectionString;
     }
 
-    public async Task<List<CommandItem>> GetCommands()
+    public async Task<List<CommandItem>> GetCommands(int robotID)
     {
         var commands = new List<CommandItem>();
 

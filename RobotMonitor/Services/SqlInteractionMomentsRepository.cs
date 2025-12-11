@@ -11,7 +11,7 @@ public class SqlInteractionMomentsRepository : ISqlInteractionMomentsRepository
         _connectionString = connectionString;
     }
 
-    public async Task<List<InteractieMoment>> SelectInteractionMoments()
+    public async Task<List<InteractieMoment>> SelectInteractionMoments(int robotID)
     {
         List<InteractieMoment> interactionTimes = new List<InteractieMoment>();
         using SqlConnection connection = new SqlConnection(_connectionString);

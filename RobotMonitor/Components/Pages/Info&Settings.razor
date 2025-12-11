@@ -1,0 +1,54 @@
+@page "/info&settings"
+@using SimpleMqtt
+@inject ISqlBatteryRepository SqlBatteryRepository
+@rendermode InteractiveServer
+@inject SimpleMqttClient mqttClient
+
+<PageTitle>Info&Settings</PageTitle>
+
+<div class="top-row px-4 d-flex align-items-center">
+            <button class="btn btn-link p-0 me-3" title="@batteryStatus%">
+                <i class="@BatteryIcon battery-vertical" style="@BatteryColor; font-size: 3rem;" >
+                <span class="battery-text-inside-vertical">@batteryStatus</span>
+                </i>
+                @* button opent modal met batterijstatus en grafiekje (met tijd over)*@
+            </button>
+            <button class="btn btn-link p-0 me-3" title="Help">
+                <i class="fas fa-question-circle fa-3x" style="color:rgb(70, 70, 70); font-size: 3rem;"></i>
+                @* button opent modal met uitleg (met tijd over)*@
+            </button>
+            <button class="btn btn-link p-0" title="Settings">
+                <i class="fas fa-wrench fa-3x" style="color:rgb(70, 70, 70); font-size: 3rem;"></i>
+                @* button opent modal met settings (met tijd over) *@
+            </button>
+        </div>
+@code {
+    private int batteryStatus;
+    protected override async Task OnInitializedAsync()
+    {
+        batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync(1);
+
+        mqttClient.OnMessageReceived += async (sender, args) =>
+        {
+            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
+
+            if (args.Topic!.StartsWith("robot/2242722/battery"))
+            {
+                await Task.Delay(50);
+                batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync(1);
+                await InvokeAsync(StateHasChanged);
+            }
+        };
+    }
+    private string BatteryColor =>
+    batteryStatus < 25 ? "color:red" :
+    "color:rgb(70, 70, 70)"; 
+
+    private string BatteryIcon =>
+    batteryStatus < 20 ? "fas fa-battery-empty" :
+    batteryStatus < 40 ? "fas fa-battery-quarter" :
+    batteryStatus < 60 ? "fas fa-battery-half" :
+    batteryStatus < 80 ? "fas fa-battery-three-quarters" :
+    "fas fa-battery-full";
+
+}
