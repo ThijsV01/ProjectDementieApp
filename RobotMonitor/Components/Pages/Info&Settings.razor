@@ -1,7 +1,9 @@
 @page "/info&settings"
 @using SimpleMqtt
+@using System.Text.Json
 @inject ISqlBatteryRepository SqlBatteryRepository
 @inject ISqlSensorRepository SqlSensorRepository
+@inject ISqlRobotRepository SqlRobotRepository
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 
@@ -19,7 +21,53 @@
                     <strong>Settings</strong>
                 </div>
                 <div class="card-body">
-                    <!-- Voeg hier jouw instellingen toe -->
+                    @if (robots == null)
+                    {
+                        <p><em>Loading...</em></p>
+                    }
+                    else if (robots.Count == 0)
+                    {
+                        <p>No commands found.</p>
+                    }
+                    else
+                    {
+                        <table class="table table-striped mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Id</th>
+                                    <th>Name</th>
+                                    <th>Model</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (Robot robot in robots)
+                                {
+                                    <tr>
+                                        <td>@robot.robotID</td>
+                                        @if (robot.robotID == 1)
+                                        {
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm" @bind="robot.Naam" />
+                                            </td>
+                                            <td>
+                                                <input type="text" class="form-control form-control-sm" @bind="robot.Model" />
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-success"
+                                                    @onclick="() => UpdateRobot(robot)">Update</button>
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>@robot.Naam</td>
+                                            <td>@robot.Model</td>
+                                            <td></td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
                 </div>
             </div>
         </div>
@@ -67,10 +115,12 @@
 @code {
     private int batteryStatus;
     private List<SensorMeting>? PIRMotionState;
+    private List<Robot>? robots;
     protected override async Task OnInitializedAsync()
     {
         batteryStatus = await SqlBatteryRepository.GetBatteryStatusInMillivoltsAsync(1);
         PIRMotionState = await SqlSensorRepository.SelectSensorDataPIRMotion(1);
+        robots = await SqlRobotRepository.SelectAllRobots();
 
         mqttClient.OnMessageReceived += async (sender, args) =>
         {
@@ -89,6 +139,16 @@
                 await InvokeAsync(StateHasChanged);
             }
         };
+    }
+    private async Task UpdateRobot(Robot robot)
+    {
+        if (robot.Naam != "" || robot.Model != "")
+        {
+            string payload = JsonSerializer.Serialize(robot);
+            await mqttClient.PublishMessage(payload, "robot/2242722/robot/edit");
+        }
+        robots = await SqlRobotRepository.SelectAllRobots();
+        await InvokeAsync(StateHasChanged);
     }
     private string BatteryColor =>
     batteryStatus < 25 ? "color:red" :

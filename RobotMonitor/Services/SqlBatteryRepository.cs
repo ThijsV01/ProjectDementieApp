@@ -15,7 +15,8 @@ public class SqlBatteryRepository : ISqlBatteryRepository
         await connection.OpenAsync();
 
         using SqlCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP 1 Percentage FROM BatterijStatus ORDER BY Tijdstip DESC";
+        command.CommandText = "SELECT TOP 1 Percentage FROM BatterijStatus WHERE RobotID = @RobotID ORDER BY Tijdstip DESC ";
+        command.Parameters.AddWithValue("@RobotID", robotID);
 
         using SqlDataReader reader = await command.ExecuteReaderAsync();
 
