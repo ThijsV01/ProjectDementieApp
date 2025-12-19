@@ -54,14 +54,14 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
                     @RobotId,@Datum,@TijdstipStart,@TijdstipEind,@Soort,@GemReactieSnelheid,@CorrectBeantwoord,@Status, @SimonSaysAantal
                 )";
             command.Parameters.Add("@RobotId", SqlDbType.Int).Value = result.RobotId;
-            command.Parameters.Add("@Datum", SqlDbType.DateTime).Value = result.EndTime.Date;
-            command.Parameters.Add("@TijdstipStart", SqlDbType.Time).Value = result.StartTime.TimeOfDay;
-            command.Parameters.Add("@TijdstipEind", SqlDbType.Time).Value = result.EndTime.TimeOfDay;
+            command.Parameters.Add("@Datum", SqlDbType.DateTime).Value = result.Date;
+            command.Parameters.Add("@TijdstipStart", SqlDbType.Time).Value = result.StartTime;
+            command.Parameters.Add("@TijdstipEind", SqlDbType.Time).Value = result.EndTime;
             command.Parameters.Add("@Soort", SqlDbType.NVarChar, 50).Value = result.KindOfGame;
             command.Parameters.Add("@GemReactieSnelheid", SqlDbType.Decimal).Value = result.AverageReactionTimeMs;
             command.Parameters.Add("@CorrectBeantwoord", SqlDbType.Decimal).Value = result.CorrectlyAnsweredPercentage;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = result.InteractionState;
-             command.Parameters.Add("@SimonSaysAantal", SqlDbType.Int).Value = result.SimonSaysAmount;
+            command.Parameters.Add("@SimonSaysAantal", SqlDbType.Int).Value = result.SimonSaysAmount;
 
             await command.ExecuteNonQueryAsync();
         }
@@ -70,15 +70,71 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
             Console.WriteLine("Error inserting interaction: " + ex.Message);
         }
     }
+    public async Task<List<string>> SelectActivities(int robotID)
+    {
+        List<string> activities = new List<string>();
+        using SqlConnection connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        using SqlCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT DISTINCT Soort FROM Interactie WHERE RobotID = @RobotID AND Soort IS NOT NULL AND Soort <> 'no game chosen'";
+        command.Parameters.AddWithValue("@RobotID", robotID);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            activities.Add(reader.GetString(0));
+        }
+
+        return activities;
+    }
+    public async Task<List<GameResult>> GetSelectedActivityData(int robotID, string activity)
+    {
+        List<GameResult> allSelectedActivityData = new List<GameResult>();
+        using SqlConnection connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        using SqlCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Interactie WHERE Soort=@Soort AND RobotID=@RobotID";
+        command.Parameters.AddWithValue("@RobotID", robotID);
+        command.Parameters.AddWithValue("@Soort", activity);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            var item = new GameResult
+            {
+                RobotId = reader.GetInt32(1),
+                Date=reader.GetDateTime(2),
+                StartTime = reader.GetTimeSpan(3),
+                EndTime = reader.GetTimeSpan(4),
+                KindOfGame = reader.GetString(5),
+                AverageReactionTimeMs = reader.GetDecimal(6),
+                CorrectlyAnsweredPercentage = reader.GetDecimal(7),
+                InteractionState = reader.GetString(8),
+            };
+            if (activity == "Simon Says" )
+            {
+                item.SimonSaysAmount = reader.GetInt32(9);
+            }
+            else
+            {
+                item.SimonSaysAmount = 0;
+            }
+
+            allSelectedActivityData.Add(item);
+        }
+
+        return allSelectedActivityData;
+    }
 }
 public class GameResult
 {
     public int RobotId { get; set; }
-    public DateTime StartTime { get; set; }
-    public DateTime EndTime { get; set; }
+    public DateTime Date { get; set; }
+    public TimeSpan StartTime { get; set; }
+    public TimeSpan EndTime { get; set; }
     public string? KindOfGame { get; set; }
-    public int AverageReactionTimeMs { get; set; }
-    public int CorrectlyAnsweredPercentage { get; set; }
+    public decimal AverageReactionTimeMs { get; set; }
+    public decimal CorrectlyAnsweredPercentage { get; set; }
     public string? InteractionState { get; set; }
     public int? SimonSaysAmount { get; set; }
 }

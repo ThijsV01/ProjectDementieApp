@@ -1,0 +1,116 @@
+@page "/activities"
+@inject ISqlActivitiesRepository SqlActivitiesRepository
+@using SimpleMqtt
+@inject SimpleMqttClient mqttClient
+@rendermode InteractiveServer
+<PageTitle>Activities</PageTitle>
+<div class="container vh-85">
+    <div class="row h-100">
+
+        <!-- Linker kolom -->
+        <div class="col-8 d-flex flex-column h-100">
+
+            <!-- Twee blokken bovenaan -->
+            <div class="row" style="height:35vh;">
+                <div class="col-2 p-1">
+                    <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+                        @if (activities == null)
+                {
+                    <p><em>Loading...</em></p>
+                }
+                else if (activities.Count == 0)
+                {
+                    <p>No activities found.</p>
+                }
+                else
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>All activities the user can choose</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (string activity in activities)
+                            {
+                                <tr style="cursor:pointer" class="@(activity == selectedActivity ? "table-primary" : "")"
+                                    @onclick="() => GetSelectedActivityData(activity)">
+                                    <td>@activity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                    </div>
+                </div>
+
+                <div class="col-10 p-1">
+                    <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+                        @if (selectedActivity != null && selectedActivityData!=null)
+                    {
+                        @if(selectedActivity=="Quiz" &&quizQuestions!=null){
+                            <table class="table table-striped">
+                                <thead>
+                            <tr>
+                                <th>Question</th>
+                                <th>Correct Answer</th>
+                                <th>Wrong Answer</th>
+                                <th>Wrong answer</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (QuestionAnswers quizStuff in quizQuestions)
+                            {
+                                <tr>
+                                    <td>@quizStuff.Question</td>
+                                    <td>@quizStuff.CorrectAnswer</td>
+                                    <td>@quizStuff.WrongAnswer</td>
+                                    <td>@quizStuff.WrongAnswer2</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                        
+                            }
+                    }
+                        
+                    </div>
+                </div>
+            </div>
+
+            <!-- Groot blok onderaan -->
+            <div class="row" style="height:52vh;">
+                <div class="col-12 p-1">
+                    <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+                        <h4>gemiddelde reactiesnelheid en aantal correct beantwoordde vragen van de activiteit die hierboven is geselecteerd</h4>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Rechter kolom (full height) -->
+        <div class="col-4 p-1" style="height:87vh;">
+            <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+                <h4>grafiek met meest gespeelde activiteiten</h4>
+            </div>
+        </div>
+    </div>
+</div>
+@code{
+    private List<string>? activities;
+    private List<QuestionAnswers>? quizQuestions;
+    private string selectedActivity="Quiz";
+    private List<GameResult>? selectedActivityData;
+    protected override async Task OnInitializedAsync()
+    {
+        activities = await SqlActivitiesRepository.SelectActivities(1);
+        selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
+        quizQuestions=await SqlActivitiesRepository.GetQuestions(1);
+    }
+    private async Task GetSelectedActivityData(string activity)
+    {
+        selectedActivity = activity;
+        selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
+    }
+}

@@ -1,5 +1,6 @@
 ﻿@page "/interactions"
 @inject ISqlInteractionMomentsRepository SqlInteractionMomentsRepository
+
 @using SimpleMqtt
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
@@ -58,18 +59,19 @@
                 <h5>Grafiek met interactiemomenten</h5>
             </div>
         </div>
-    </div>
 
-    <!-- Onderste rij met twee blokken -->
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Gemiddelde reactiesnelheid of correcte vragen of iets komt hier in een grafiek</h5>
+
+        <!-- Onderste rij met twee blokken -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card p-3">
+                    <h5>Gemiddelde reactiesnelheid of correcte vragen of iets komt hier in een grafiek</h5>
+                </div>
             </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Alle activiteiten in een tabel.</h5>
+            <div class="col-md-6">
+                <div class="card p-3">
+
+                </div>
             </div>
         </div>
     </div>
@@ -102,4 +104,5 @@
         // Refresh list
         interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
     }
+
 }
