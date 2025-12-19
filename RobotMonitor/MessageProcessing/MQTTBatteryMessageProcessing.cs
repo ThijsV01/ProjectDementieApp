@@ -21,7 +21,6 @@ public class MQTTBatteryMessageProcessing : IHostedService
                     int robotId=int.Parse(parts[0]);
                     int maxValue = 8600;
                     batteryValue = (int)((double)batteryValue / maxValue * 100);
-                    Console.WriteLine(batteryValue);
                     _SQLBatteryRepository.InsertBatteryLevel(batteryValue, robotId);
                 }
             }

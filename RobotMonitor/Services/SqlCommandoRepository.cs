@@ -17,8 +17,9 @@ public class SqlCommandoRepository : ISqlCommandoRepository
         await connection.OpenAsync();
 
         using SqlCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT TOP 5 * FROM Commando ORDER BY Datum DESC, Tijdstip DESC;";
-
+        command.CommandText = "SELECT TOP 5 * FROM Commando WHERE RobotID = @RobotID ORDER BY Datum DESC, Tijdstip DESC;";
+        command.Parameters.AddWithValue("@RobotID", robotID);
+        
         using SqlDataReader reader = await command.ExecuteReaderAsync();
 
         while (reader.Read())
