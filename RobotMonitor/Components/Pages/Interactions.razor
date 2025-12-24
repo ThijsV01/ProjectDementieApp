@@ -1,37 +1,44 @@
 ﻿@page "/interactions"
 @inject ISqlInteractionMomentsRepository SqlInteractionMomentsRepository
+@inject ISqlActivitiesRepository SqlActivitiesRepository
 
 @using SimpleMqtt
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 <PageTitle>Interactions</PageTitle>
-<div class="container">
-    <!-- Bovenste rij met twee blokken -->
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="card p-3">
+<div class="container d-flex flex-column">
+
+    <!-- Bovenste twee blokken -->
+    <div class="row" style="height:55vh;">
+        <div class="col-6 p-1 h-100">
+            <div class="card h-100 w-100 d-flex p-3">
                 @if (interactionMoments == null)
                 {
                     <p><em>Loading...</em></p>
                 }
                 else if (interactionMoments.Count == 0)
                 {
-                    <p>No commands found.</p>
+                    <p>No interactionmoments found.</p>
+                    <tr class="table-light sticky-bottom">
+                        <td colspan="2">
+                            <input type="time" @bind="newTime" class="form-control" />
+                            <button class="btn btn-sm btn-primary mt-1 w-100" @onclick="() => AddInteractionWithTime(1)">
+                                Add interactionmoment
+                            </button>
+                        </td>
+                    </tr>
                 }
                 else
                 {
-                    <table class="table table-striped mb-0">
-                        <thead>
-                            <tr>
-                                <th>Interaction Moments</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                    </table>
-
-                    <!-- Scrollbare body -->
-                    <div style="max-height: 240px; overflow-y: auto;">
+                    <div style="max-height: 100vh; overflow-y: auto;">
                         <table class="table table-striped mb-0">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th>Moments the robot will interact</th>
+                                    <th>Remove specific moment</th>
+                                </tr>
+                            </thead>
+
                             <tbody>
                                 @foreach (InteractieMoment interactionMoment in interactionMoments)
                                 {
@@ -45,55 +52,93 @@
                                         </td>
                                     </tr>
                                 }
+
+                                <!-- Always visible add row -->
+                                <tr class="table-light sticky-bottom">
+                                    <td colspan="2">
+                                        <input type="time" @bind="newTime" class="form-control" />
+                                        <button class="btn btn-sm btn-primary mt-1 w-100"
+                                            @onclick="() => AddInteractionWithTime(1)">
+                                            Add
+                                        </button>
+                                    </td>
+                                </tr>
                             </tbody>
                         </table>
                     </div>
-
-                    <!-- Altijd zichtbaar -->
-                    <table class="table mb-0">
-                        <tbody>
-                            <tr>
-                                <td colspan="2">
-                                    <input type="time" @bind="newTime" class="form-control" />
-                                    <button class="btn btn-sm btn-primary mt-1 w-100"
-                                        @onclick="() => AddInteractionWithTime(1)">
-                                        Add
-                                    </button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
                 }
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card p-3">
-                <h5>Grafiek met interactiemomenten</h5>
+
+        <div class="col-6 p-1 h-100">
+            <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+                <h4>Grafiek met alle interactietijden en de status van de interactie </h4>
             </div>
         </div>
+    </div>
 
+    <!-- all activities -->
+    <div class="row mt-2" style="height:30vh;">
+        <div class="col-12 p-1">
+            <div class="card h-100 w-100 d-flex flex-column p-3">
 
-        <!-- Onderste rij met twee blokken -->
-        <div class="row">
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <h5>Gemiddelde reactiesnelheid of correcte vragen of iets komt hier in een grafiek</h5>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card p-3">
-                    <h5>Tabel met alle interacties die hebben plaatsgevonden</h5>
+                <div>
+                    @if (allActivities == null)
+                    {
+                        <p><em>Loading...</em></p>
+                    }
+                    else if (allActivities.Count == 0)
+                    {
+                        <p>No activities found.</p>
+                    }
+                    else
+                    {
+                        <div style="max-height: 240px; overflow-y: auto;">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-light sticky-top">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Start Time</th>
+                                        <th>End Time</th>
+                                        <th>Kind of Activity</th>
+                                        <th>Average reaction speed (ms)</th>
+                                        <th>Correctly answered (%)</th>
+                                        <th>State</th>
+                                        <th>Simon says amount</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (GameResult activity in allActivities)
+                                    {
+                                        <tr>
+                                            <td>@activity.Date.ToString("dd-MM-yyyy")</td>
+                                            <td>@activity.StartTime.ToString(@"hh\:mm\:ss")</td>
+                                            <td>@activity.EndTime.ToString(@"hh\:mm\:ss")</td>
+                                            <td>@activity.KindOfGame</td>
+                                            <td>@activity.AverageReactionTimeMs</td>
+                                            <td>@activity.CorrectlyAnsweredPercentage</td>
+                                            <td>@activity.InteractionState</td>
+                                            <td>@activity.SimonSaysAmount</td>
+                                        </tr>
+                                    }
+
+                                </tbody>
+                            </table>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </div>
 </div>
-
 @code {
     private List<InteractieMoment>? interactionMoments;
+    private List<GameResult>? allActivities;
+
     protected override async Task OnInitializedAsync()
     {
         interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
+        allActivities = await SqlActivitiesRepository.AllActivities(1);
     }
 
     private async Task DeleteInteraction(int id)

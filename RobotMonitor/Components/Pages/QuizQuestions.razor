@@ -1,0 +1,109 @@
+@page "/quizquestions"
+@using SimpleMqtt
+@using System.Text.Json
+@inject ISqlActivitiesRepository SqlActivitiesRepository
+@inject SimpleMqttClient mqttClient
+@rendermode InteractiveServer
+
+<PageTitle>Quiz Questions</PageTitle>
+
+<div style="height:90vh; display:flex; flex-direction:column;">
+@if (quizQuestions != null)
+{
+    <div style="flex:1 1 auto; overflow:auto;">
+        <table class="table table-striped mb-0" style="table-layout:fixed; width:100%;">
+            <colgroup>
+                <col style="width:35%">
+                <col style="width:15%">
+                <col style="width:15%">
+                <col style="width:15%">
+                <col style="width:20%">
+            </colgroup>
+
+            <thead style="position:sticky; top:0; background-color:#f8f9fa; z-index:2;">
+                <tr>
+                    <th>Question</th>
+                    <th>Correct Answer</th>
+                    <th>Wrong Answer</th>
+                    <th>Wrong Answer</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach (QuestionAnswers quizStuff in quizQuestions)
+                {
+                    <tr>
+                        <td title="@quizStuff.Question">@quizStuff.Question</td>
+                        <td title="@quizStuff.CorrectAnswer">@quizStuff.CorrectAnswer</td>
+                        <td title="@quizStuff.WrongAnswer">@quizStuff.WrongAnswer</td>
+                        <td title="@quizStuff.WrongAnswer2">@quizStuff.WrongAnswer2</td>
+                        <td>
+                            <button class="btn btn-sm btn-danger w-100"
+                                    @onclick="() => DeleteQuestion(quizStuff.QuizId)">
+                                Delete the question
+                            </button>
+                        </td>
+                    </tr>
+                }
+
+                <tr style="position:sticky; bottom:0; background-color:#f8f9fa; z-index:1;">
+                    <td><input class="form-control" placeholder="Question (max 150)" maxlength="150" @bind="question" /></td>
+                    <td><input class="form-control" placeholder="Correct (max 50)" maxlength="50" @bind="correctAnswer" /></td>
+                    <td><input class="form-control" placeholder="Wrong (max 50)" maxlength="50" @bind="wrongAnswer" /></td>
+                    <td><input class="form-control" placeholder="Wrong (max 50)" maxlength="50" @bind="wrongAnswer2" /></td>
+                    <td>
+                        <button class="btn btn-sm btn-primary w-100" @onclick="() => AddQuestion(1)">Add</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+}
+</div>
+
+@code {
+    private List<QuestionAnswers>? quizQuestions;
+    private string? question;
+    private string? correctAnswer;
+    private string? wrongAnswer;
+    private string? wrongAnswer2;
+
+    protected override async Task OnInitializedAsync()
+    {
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
+    }
+
+    private async Task DeleteQuestion(int id)
+    {
+        await mqttClient.PublishMessage($"{id}", "robot/2242722/activities/quizquestion/delete");
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
+    }
+
+    private async Task AddQuestion(int robotID)
+    {
+        if (string.IsNullOrWhiteSpace(question) || string.IsNullOrWhiteSpace(correctAnswer) ||
+            string.IsNullOrWhiteSpace(wrongAnswer) || string.IsNullOrWhiteSpace(wrongAnswer2))
+        {
+            return;
+        }
+
+        QuestionAnswers q = new QuestionAnswers
+        {
+            RobotId = robotID,
+            Question = question,
+            CorrectAnswer = correctAnswer,
+            WrongAnswer = wrongAnswer,
+            WrongAnswer2 = wrongAnswer2
+        };
+
+        await mqttClient.PublishMessage(JsonSerializer.Serialize(q), $"robot/2242722/activities/quizquestion/add");
+
+        question = null;
+        correctAnswer = null;
+        wrongAnswer = null;
+        wrongAnswer2 = null;
+
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
+    }
+}

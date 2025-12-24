@@ -6,7 +6,7 @@
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 <PageTitle>Activities</PageTitle>
-<div class="container vh-85">
+<div class="container d-flex flex-column">
     <div class="row h-100">
 
         <!-- Linker kolom -->
@@ -58,108 +58,24 @@
 
                 <!-- Activity details -->
                 <div class="col-9 p-1">
-                    <div class="card h-100 w-100 p-2">
-
-                        @if (selectedActivity != null && selectedActivityData != null)
+                    <div class="card h-100 w-100 p-2 align-items-center justify-content-center text-center">
+                        @if (selectedActivity == "Quiz")
                         {
-                            @if (selectedActivity == "Quiz" && quizQuestions != null)
-                            {
-                                <!-- Quiz header -->
-                                <table class="table table-striped mb-0">
-                                    <colgroup>
-                                        <col style="width:35%">
-                                        <col style="width:15%">
-                                        <col style="width:15%">
-                                        <col style="width:15%">
-                                        <col style="width:20%">
-                                    </colgroup>
-                                    <thead>
-                                        <tr>
-                                            <th>Question</th>
-                                            <th>Correct Answer</th>
-                                            <th>Wrong Answer</th>
-                                            <th>Wrong Answer</th>
-                                            <th>Delete</th>
-                                        </tr>
-                                    </thead>
-                                </table>
+                            <h6>Average correctly answered for quiz, make it a circlegraph or show the correctly answered
+                                ones</h6>
+                        }
+                        @if (selectedActivity == "Simon Says")
+                        {
+                            <h6>show the average amount of steps</h6>
+                        }
 
-                                <!-- Scrollbare vragen -->
-                                <div style="max-height: 20vh; overflow-y: auto;">
-                                    <table class="table table-striped mb-0">
-                                        <colgroup>
-                                            <col style="width:35%">
-                                            <col style="width:15%">
-                                            <col style="width:15%">
-                                            <col style="width:15%">
-                                            <col style="width:20%">
-                                        </colgroup>
-                                        <tbody>
-                                            @foreach (QuestionAnswers quizStuff in quizQuestions)
-                                            {
-                                                <tr>
-                                                    <td>@quizStuff.Question</td>
-                                                    <td>@quizStuff.CorrectAnswer</td>
-                                                    <td>@quizStuff.WrongAnswer</td>
-                                                    <td>@quizStuff.WrongAnswer2</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-danger"
-                                                            @onclick="() => DeleteQuestion(quizStuff.QuizId)">
-                                                            Delete
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            }
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <!-- Add rij (altijd zichtbaar) -->
-                                <table class="table mb-0">
-                                    <colgroup>
-                                        <col style="width:35%">
-                                        <col style="width:15%">
-                                        <col style="width:15%">
-                                        <col style="width:15%">
-                                        <col style="width:20%">
-                                    </colgroup>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <input type="text" placeholder="Question" @bind="question"
-                                                    class="form-control" />
-                                            </td>
-                                            <td>
-                                                <input type="text" placeholder="Correct" @bind="correctAnswer"
-                                                    class="form-control" />
-                                            </td>
-                                            <td>
-                                                <input type="text" placeholder="Wrong" @bind="wrongAnswer"
-                                                    class="form-control" />
-                                            </td>
-                                            <td>
-                                                <input type="text" placeholder="Wrong" @bind="wrongAnswer2"
-                                                    class="form-control" />
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary" @onclick="() => AddQuestion(1)">
-                                                    Add
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            }
-
-                            @if (selectedActivity == "SimonSays")
-                            {
-                                <p>dus... hobby's?</p>
-                            }
-
-                            @if (selectedActivity == "ReactionGame")
-                            {
-                                <p>dus... hobby's?</p>
-                            }
+                        @if (selectedActivity == "ReactionGame")
+                        {
+                            <h6>Average correctly answered for reaction game, make it a circlegraph</h6>
+                        }
+                        @if (selectedActivity == "No activity selected")
+                        {
+                            <p>Select an activity top left to show its data.</p>
                         }
                     </div>
                 </div>
@@ -169,10 +85,20 @@
             <div class="row" style="height:52vh;">
                 <div class="col-12 p-1">
                     <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                        <h4>
-                            gemiddelde reactiesnelheid en aantal correct beantwoorde vragen
-                            van de geselecteerde activiteit
-                        </h4>
+                        
+                        @if (selectedActivity == "No activity selected")
+                        {
+                            <p>Select an activity top left to show its data.</p>
+                        }
+                        else
+                        {
+                            @* @if (AverageReactionTime != null)
+                            {
+                               <h6>Average reactiontime for selected game, maybe even make a graph that shows what
+                            the reactiontimes are, like a scatterplot over time</h6>
+                            } *@
+                        }
+
                     </div>
                 </div>
             </div>
@@ -182,6 +108,7 @@
         <div class="col-4 p-1" style="height:87vh;">
             <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
                 <h4>grafiek met meest gespeelde activiteiten</h4>
+                <h6>alle soorten spellen sorteren en dan de count hiervan in staven weergeven (misschien zelfs dat je kan filteren op afgelopen maand, jaar, dag)</h6>
             </div>
         </div>
 
@@ -189,52 +116,22 @@
 </div>
 @code {
     private List<string>? activities;
-    private List<QuestionAnswers>? quizQuestions;
-    private string selectedActivity = "Quiz";
+    private string selectedActivity = "No activity selected";
     private List<GameResult>? selectedActivityData;
+    private List<GameResult>? allActivities;
+    @* private decimal? AverageReactionTime;
+    private decimal? AverageCorrectAnsweredPercentage;
+    private double? AverageSimonSaysAmount; *@
     protected override async Task OnInitializedAsync()
     {
         activities = await SqlActivitiesRepository.SelectActivities(1);
         selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
-        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
+        allActivities = await SqlActivitiesRepository.AllActivities(1);
     }
     private async Task GetSelectedActivityData(string activity)
     {
         selectedActivity = activity;
         selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
     }
-    private async Task DeleteQuestion(int id)
-    {
-        await mqttClient.PublishMessage($"{id}", "robot/2242722/activities/quizquestion/delete");
-        // Refresh list
-        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
-    }
-    private string? question;
-    private string? correctAnswer;
-    private string? wrongAnswer;
-    private string? wrongAnswer2;
 
-
-    private async Task AddQuestion(int robotID)
-    {
-        if
-        (string.IsNullOrWhiteSpace(question) || string.IsNullOrWhiteSpace(correctAnswer) ||
-        string.IsNullOrWhiteSpace(wrongAnswer) || string.IsNullOrWhiteSpace(wrongAnswer2))
-        {
-            return;
-        }
-        QuestionAnswers q = new QuestionAnswers();
-        q.RobotId = robotID;
-        q.Question = question;
-        q.CorrectAnswer = correctAnswer;
-        q.WrongAnswer = wrongAnswer;
-        q.WrongAnswer2 = wrongAnswer2;
-        await mqttClient.PublishMessage(JsonSerializer.Serialize(q), $"robot/2242722/activities/quizquestion/add");
-        question = null;
-        correctAnswer = null;
-        wrongAnswer = null;
-        wrongAnswer2 = null;
-        // Refresh list
-        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
-    }
 }

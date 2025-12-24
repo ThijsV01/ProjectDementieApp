@@ -110,16 +110,23 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
                 EndTime = reader.GetTimeSpan(4),
                 KindOfGame = reader.GetString(5),
                 AverageReactionTimeMs = reader.GetDecimal(6),
-                CorrectlyAnsweredPercentage = reader.GetDecimal(7),
                 InteractionState = reader.GetString(8),
             };
-            if (activity == "Simon Says" )
+            if (!reader.IsDBNull(7))
             {
-                item.SimonSaysAmount = reader.GetInt32(9);
+                item.CorrectlyAnsweredPercentage=reader.GetDecimal(7);
             }
             else
             {
-                item.SimonSaysAmount = 0;
+                item.CorrectlyAnsweredPercentage=-1;
+            }
+            if (!reader.IsDBNull(9))
+            {
+                item.SimonSaysAmount=reader.GetInt32(9);
+            }
+            else
+            {
+                item.SimonSaysAmount=-1;
             }
 
             allSelectedActivityData.Add(item);
@@ -180,6 +187,49 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
         {
             Console.WriteLine("Error adding quiz question: " + ex.Message);
         }
+    }
+
+    public async Task<List<GameResult>> AllActivities(int robotID)
+    {
+        List<GameResult> activities = new List<GameResult>();
+        using SqlConnection connection = new SqlConnection(_connectionString);
+        await connection.OpenAsync();
+        using SqlCommand command = connection.CreateCommand();
+        command.CommandText = "SELECT * FROM Interactie WHERE RobotID = @RobotID ORDER BY Datum DESC, TijdstipStart DESC;";
+        command.Parameters.AddWithValue("@RobotID", robotID);
+        using SqlDataReader reader = await command.ExecuteReaderAsync();
+
+        while (await reader.ReadAsync())
+        {
+            GameResult oneActivity = new GameResult
+            {
+                Date=reader.GetDateTime(2),
+                StartTime=reader.GetTimeSpan(3),
+                EndTime=reader.GetTimeSpan(4),
+                KindOfGame=reader.GetString(5),
+                AverageReactionTimeMs=reader.GetDecimal(6),
+                InteractionState=reader.GetString(8),
+            };
+            if (!reader.IsDBNull(7))
+            {
+                oneActivity.CorrectlyAnsweredPercentage=reader.GetDecimal(7);
+            }
+            else
+            {
+                oneActivity.CorrectlyAnsweredPercentage=-1;
+            }
+            if (!reader.IsDBNull(9))
+            {
+                oneActivity.SimonSaysAmount=reader.GetInt32(9);
+            }
+            else
+            {
+                oneActivity.SimonSaysAmount=-1;
+            }
+            activities.Add(oneActivity);
+        }
+
+        return activities;
     }
 }
 public class GameResult
