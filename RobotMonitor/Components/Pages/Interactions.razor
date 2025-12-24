@@ -20,31 +20,43 @@
                 }
                 else
                 {
-                    <table class="table table-striped">
+                    <table class="table table-striped mb-0">
                         <thead>
                             <tr>
                                 <th>Interaction Moments</th>
+                                <th></th>
                             </tr>
                         </thead>
-                        <tbody>
-                            @foreach (InteractieMoment interactionMoment in interactionMoments)
-                            {
-                                <tr>
-                                    <td>@interactionMoment.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                                    <td>
-                                        <button class="btn btn-sm btn-danger"
-                                            @onclick="() => DeleteInteraction(interactionMoment.InteractieID)">
-                                            Delete
-                                        </button>
-                                    </td>
-                                </tr>
-                            }
-                            <tr>
+                    </table>
 
+                    <!-- Scrollbare body -->
+                    <div style="max-height: 240px; overflow-y: auto;">
+                        <table class="table table-striped mb-0">
+                            <tbody>
+                                @foreach (InteractieMoment interactionMoment in interactionMoments)
+                                {
+                                    <tr>
+                                        <td>@interactionMoment.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-danger"
+                                                @onclick="() => DeleteInteraction(interactionMoment.InteractieID)">
+                                                Delete
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Altijd zichtbaar -->
+                    <table class="table mb-0">
+                        <tbody>
+                            <tr>
                                 <td colspan="2">
                                     <input type="time" @bind="newTime" class="form-control" />
-                                    <button class="btn btn-sm btn-primary mt-1 w-100 h-100"
-                                        @onclick="() => AddInteractionWithTime(interactionMoments[0].RobotID)">
+                                    <button class="btn btn-sm btn-primary mt-1 w-100"
+                                        @onclick="() => AddInteractionWithTime(1)">
                                         Add
                                     </button>
                                 </td>
@@ -70,7 +82,7 @@
             </div>
             <div class="col-md-6">
                 <div class="card p-3">
-
+                    <h5>Tabel met alle interacties die hebben plaatsgevonden</h5>
                 </div>
             </div>
         </div>

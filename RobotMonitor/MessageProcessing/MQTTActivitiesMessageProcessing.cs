@@ -28,6 +28,20 @@ public class MQTTActivitiesMessageProcessing : IHostedService
                 _SQLActivitiesRepository.InsertInteraction(interactionResult!);
 
             }
+            if (args.Topic == "robot/2242722/activities/quizquestion/add")
+            {
+                var quizQuestion = JsonSerializer.Deserialize<QuestionAnswers>(args.Message!);
+                _SQLActivitiesRepository.AddQuestion(quizQuestion!);
+
+            }
+            if (args.Topic == "robot/2242722/activities/quizquestion/delete")
+            {
+                if (int.TryParse(args.Message, out var quizQuestionId))
+                {
+                _SQLActivitiesRepository.DeleteQuestion(quizQuestionId!);
+                }
+
+            }
 
         };
     }

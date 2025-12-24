@@ -17,7 +17,7 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
         await connection.OpenAsync();
 
         using SqlCommand command = connection.CreateCommand();
-        command.CommandText = "SELECT Question, CorrectAnswer, WrongAnswer, WrongAnswer2 FROM Quiz WHERE RobotID = @RobotID ";
+        command.CommandText = "SELECT * FROM Quiz WHERE RobotID = @RobotID ";
         command.Parameters.AddWithValue("@RobotID", robotID);
 
         using SqlDataReader reader = await command.ExecuteReaderAsync();
@@ -26,10 +26,12 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
         {
             var item = new QuestionAnswers
             {
-                Question = reader.GetString(0),
-                CorrectAnswer = reader.GetString(1),
-                WrongAnswer = reader.GetString(2),
-                WrongAnswer2 = reader.GetString(3)
+                QuizId=reader.GetInt32(0),
+                RobotId=reader.GetInt32(1),
+                Question = reader.GetString(2),
+                CorrectAnswer = reader.GetString(3),
+                WrongAnswer = reader.GetString(4),
+                WrongAnswer2 = reader.GetString(5)
             };
             questions.Add(item);
         }
@@ -125,6 +127,60 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
 
         return allSelectedActivityData;
     }
+
+    public async void DeleteQuestion(int questionId)
+    {
+        try
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using SqlCommand command = connection.CreateCommand();
+            command.CommandText = "DELETE FROM Quiz WHERE QuizId = @Id";
+            command.Parameters.Add("@Id", SqlDbType.Int).Value = questionId;
+
+            await command.ExecuteNonQueryAsync();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error deleting quiz question: " + ex.Message);
+        }
+    }
+
+    public async void AddQuestion(QuestionAnswers questionAnswers)
+    {
+        try
+        {
+            using SqlConnection connection = new SqlConnection(_connectionString);
+            await connection.OpenAsync();
+
+            using SqlCommand command = connection.CreateCommand();
+            command.CommandText = @"
+                IF NOT EXISTS (
+                    SELECT 1 
+                    FROM Quiz 
+                    WHERE RobotId = @RobotId AND Question= @Question
+                )
+                BEGIN
+                    INSERT INTO Quiz (RobotId, Question, CorrectAnswer, WrongAnswer, WrongAnswer2) 
+                    VALUES (@RobotId, @Question, @CorrectAnswer, @WrongAnswer, @WrongAnswer2)
+                END
+            ";
+            command.Parameters.Add("@RobotId", SqlDbType.Int).Value = questionAnswers.RobotId;
+            command.Parameters.Add("@Question", SqlDbType.VarChar).Value = questionAnswers.Question;
+            command.Parameters.Add("@CorrectAnswer", SqlDbType.VarChar).Value = questionAnswers.CorrectAnswer;
+            command.Parameters.Add("@WrongAnswer", SqlDbType.VarChar).Value = questionAnswers.WrongAnswer;
+            command.Parameters.Add("@WrongAnswer2", SqlDbType.VarChar).Value = questionAnswers.WrongAnswer2;
+
+            await command.ExecuteNonQueryAsync();
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("Error adding quiz question: " + ex.Message);
+        }
+    }
 }
 public class GameResult
 {
@@ -140,6 +196,8 @@ public class GameResult
 }
 public class QuestionAnswers
 {
+    public int QuizId { get; set; }
+    public int RobotId { get; set; }
     public string? Question { get; set; }
     public string? CorrectAnswer { get; set; }
     public string? WrongAnswer { get; set; }

@@ -1,6 +1,8 @@
 @page "/activities"
 @inject ISqlActivitiesRepository SqlActivitiesRepository
+@using Microsoft.IdentityModel.Tokens
 @using SimpleMqtt
+@using System.Text.Json
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 <PageTitle>Activities</PageTitle>
@@ -12,68 +14,153 @@
 
             <!-- Twee blokken bovenaan -->
             <div class="row" style="height:35vh;">
-                <div class="col-2 p-1">
-                    <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
+
+                <!-- Activities lijst -->
+                <div class="col-3 p-1">
+                    <div class="card h-100 w-100 p-2">
                         @if (activities == null)
-                {
-                    <p><em>Loading...</em></p>
-                }
-                else if (activities.Count == 0)
-                {
-                    <p>No activities found.</p>
-                }
-                else
-                {
-                    <table class="table table-striped">
-                        <thead>
-                            <tr>
-                                <th>All activities the user can choose</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (string activity in activities)
-                            {
-                                <tr style="cursor:pointer" class="@(activity == selectedActivity ? "table-primary" : "")"
-                                    @onclick="() => GetSelectedActivityData(activity)">
-                                    <td>@activity</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                }
+                        {
+                            <p><em>Loading...</em></p>
+                        }
+                        else if (activities.Count == 0)
+                        {
+                            <p>No activities found.</p>
+                        }
+                        else
+                        {
+                            <!-- Header -->
+                            <table class="table table-striped mb-0">
+                                <thead>
+                                    <tr>
+                                        <th>All activities</th>
+                                    </tr>
+                                </thead>
+                            </table>
+
+                            <!-- Scrollbare body -->
+                            <div style="max-height: 28vh; overflow-y: auto;">
+                                <table class="table table-striped mb-0">
+                                    <tbody>
+                                        @foreach (string activity in activities)
+                                        {
+                                            <tr style="cursor:pointer"
+                                                class="@(activity == selectedActivity ? "table-primary" : "")"
+                                                @onclick="() => GetSelectedActivityData(activity)">
+                                                <td>@activity</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        }
                     </div>
                 </div>
 
-                <div class="col-10 p-1">
-                    <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                        @if (selectedActivity != null && selectedActivityData!=null)
-                    {
-                        @if(selectedActivity=="Quiz" &&quizQuestions!=null){
-                            <table class="table table-striped">
-                                <thead>
-                            <tr>
-                                <th>Question</th>
-                                <th>Correct Answer</th>
-                                <th>Wrong Answer</th>
-                                <th>Wrong answer</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (QuestionAnswers quizStuff in quizQuestions)
+                <!-- Activity details -->
+                <div class="col-9 p-1">
+                    <div class="card h-100 w-100 p-2">
+
+                        @if (selectedActivity != null && selectedActivityData != null)
+                        {
+                            @if (selectedActivity == "Quiz" && quizQuestions != null)
                             {
-                                <tr>
-                                    <td>@quizStuff.Question</td>
-                                    <td>@quizStuff.CorrectAnswer</td>
-                                    <td>@quizStuff.WrongAnswer</td>
-                                    <td>@quizStuff.WrongAnswer2</td>
-                                </tr>
+                                <!-- Quiz header -->
+                                <table class="table table-striped mb-0">
+                                    <colgroup>
+                                        <col style="width:35%">
+                                        <col style="width:15%">
+                                        <col style="width:15%">
+                                        <col style="width:15%">
+                                        <col style="width:20%">
+                                    </colgroup>
+                                    <thead>
+                                        <tr>
+                                            <th>Question</th>
+                                            <th>Correct Answer</th>
+                                            <th>Wrong Answer</th>
+                                            <th>Wrong Answer</th>
+                                            <th>Delete</th>
+                                        </tr>
+                                    </thead>
+                                </table>
+
+                                <!-- Scrollbare vragen -->
+                                <div style="max-height: 20vh; overflow-y: auto;">
+                                    <table class="table table-striped mb-0">
+                                        <colgroup>
+                                            <col style="width:35%">
+                                            <col style="width:15%">
+                                            <col style="width:15%">
+                                            <col style="width:15%">
+                                            <col style="width:20%">
+                                        </colgroup>
+                                        <tbody>
+                                            @foreach (QuestionAnswers quizStuff in quizQuestions)
+                                            {
+                                                <tr>
+                                                    <td>@quizStuff.Question</td>
+                                                    <td>@quizStuff.CorrectAnswer</td>
+                                                    <td>@quizStuff.WrongAnswer</td>
+                                                    <td>@quizStuff.WrongAnswer2</td>
+                                                    <td>
+                                                        <button class="btn btn-sm btn-danger"
+                                                            @onclick="() => DeleteQuestion(quizStuff.QuizId)">
+                                                            Delete
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <!-- Add rij (altijd zichtbaar) -->
+                                <table class="table mb-0">
+                                    <colgroup>
+                                        <col style="width:35%">
+                                        <col style="width:15%">
+                                        <col style="width:15%">
+                                        <col style="width:15%">
+                                        <col style="width:20%">
+                                    </colgroup>
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <input type="text" placeholder="Question" @bind="question"
+                                                    class="form-control" />
+                                            </td>
+                                            <td>
+                                                <input type="text" placeholder="Correct" @bind="correctAnswer"
+                                                    class="form-control" />
+                                            </td>
+                                            <td>
+                                                <input type="text" placeholder="Wrong" @bind="wrongAnswer"
+                                                    class="form-control" />
+                                            </td>
+                                            <td>
+                                                <input type="text" placeholder="Wrong" @bind="wrongAnswer2"
+                                                    class="form-control" />
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-sm btn-primary" @onclick="() => AddQuestion(1)">
+                                                    Add
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             }
-                        </tbody>
-                    </table>
-                        
+
+                            @if (selectedActivity == "SimonSays")
+                            {
+                                <p>dus... hobby's?</p>
                             }
-                    }
-                        
+
+                            @if (selectedActivity == "ReactionGame")
+                            {
+                                <p>dus... hobby's?</p>
+                            }
+                        }
                     </div>
                 </div>
             </div>
@@ -82,35 +169,72 @@
             <div class="row" style="height:52vh;">
                 <div class="col-12 p-1">
                     <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                        <h4>gemiddelde reactiesnelheid en aantal correct beantwoordde vragen van de activiteit die hierboven is geselecteerd</h4>
+                        <h4>
+                            gemiddelde reactiesnelheid en aantal correct beantwoorde vragen
+                            van de geselecteerde activiteit
+                        </h4>
                     </div>
                 </div>
             </div>
-
         </div>
 
-        <!-- Rechter kolom (full height) -->
+        <!-- Rechter kolom -->
         <div class="col-4 p-1" style="height:87vh;">
             <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
                 <h4>grafiek met meest gespeelde activiteiten</h4>
             </div>
         </div>
+
     </div>
 </div>
-@code{
+@code {
     private List<string>? activities;
     private List<QuestionAnswers>? quizQuestions;
-    private string selectedActivity="Quiz";
+    private string selectedActivity = "Quiz";
     private List<GameResult>? selectedActivityData;
     protected override async Task OnInitializedAsync()
     {
         activities = await SqlActivitiesRepository.SelectActivities(1);
         selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
-        quizQuestions=await SqlActivitiesRepository.GetQuestions(1);
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
     }
     private async Task GetSelectedActivityData(string activity)
     {
         selectedActivity = activity;
         selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
+    }
+    private async Task DeleteQuestion(int id)
+    {
+        await mqttClient.PublishMessage($"{id}", "robot/2242722/activities/quizquestion/delete");
+        // Refresh list
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
+    }
+    private string? question;
+    private string? correctAnswer;
+    private string? wrongAnswer;
+    private string? wrongAnswer2;
+
+
+    private async Task AddQuestion(int robotID)
+    {
+        if
+        (string.IsNullOrWhiteSpace(question) || string.IsNullOrWhiteSpace(correctAnswer) ||
+        string.IsNullOrWhiteSpace(wrongAnswer) || string.IsNullOrWhiteSpace(wrongAnswer2))
+        {
+            return;
+        }
+        QuestionAnswers q = new QuestionAnswers();
+        q.RobotId = robotID;
+        q.Question = question;
+        q.CorrectAnswer = correctAnswer;
+        q.WrongAnswer = wrongAnswer;
+        q.WrongAnswer2 = wrongAnswer2;
+        await mqttClient.PublishMessage(JsonSerializer.Serialize(q), $"robot/2242722/activities/quizquestion/add");
+        question = null;
+        correctAnswer = null;
+        wrongAnswer = null;
+        wrongAnswer2 = null;
+        // Refresh list
+        quizQuestions = await SqlActivitiesRepository.GetQuestions(1);
     }
 }
