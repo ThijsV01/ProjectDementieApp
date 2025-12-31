@@ -3,6 +3,7 @@
 @inject ISqlActivitiesRepository SqlActivitiesRepository
 
 @using SimpleMqtt
+@using System.Linq;
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
 <PageTitle>Interactions</PageTitle>
@@ -71,8 +72,13 @@
         </div>
 
         <div class="col-6 p-1 h-100">
-            <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                <h4>Grafiek met alle interactietijden en de status van de interactie </h4>
+            <div class="card h-100 w-100">
+                <h5>Every interaction fits within a one hour frame. The states are shown in the graph below.</h5>
+                <MudPaper Style="flex:1" Width=100%; Height=100%;>
+                    <MudChart ChartType="ChartType.StackedBar" ChartSeries="@_interactionSeries"
+                         XAxisLabels="@_interactionXAxisLabels" Width="100%" Height="90%"
+                        AxisChartOptions="_interactionAxisOptions"></MudChart>
+                </MudPaper>
             </div>
         </div>
     </div>
@@ -112,13 +118,35 @@
                                     {
                                         <tr>
                                             <td>@activity.Date.ToString("dd-MM-yyyy")</td>
-                                            <td>@activity.StartTime.ToString(@"hh\:mm\:ss")</td>
-                                            <td>@activity.EndTime.ToString(@"hh\:mm\:ss")</td>
+                                            <td>@activity.StartTime.ToString(@"HH\:mm\:ss")</td>
+                                            <td>@activity.EndTime.ToString(@"HH\:mm\:ss")</td>
                                             <td>@activity.KindOfGame</td>
-                                            <td>@activity.AverageReactionTimeMs</td>
-                                            <td>@activity.CorrectlyAnsweredPercentage</td>
+                                            @if (activity.AverageReactionTimeMs < 0)
+                                            {
+                                                <td>Nothing measured</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@activity.AverageReactionTimeMs</td>
+                                            }
+                                            @if (@activity.CorrectlyAnsweredPercentage < 0)
+                                            {
+                                                <td>Nothing measured</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@activity.CorrectlyAnsweredPercentage</td>
+                                            }
                                             <td>@activity.InteractionState</td>
-                                            <td>@activity.SimonSaysAmount</td>
+                                            @if (@activity.SimonSaysAmount < 0)
+                                            {
+                                                <td>Nothing measured</td>
+                                            }
+                                            else
+                                            {
+                                                <td>@activity.SimonSaysAmount</td>
+                                            }
+
                                         </tr>
                                     }
 
@@ -134,11 +162,16 @@
 @code {
     private List<InteractieMoment>? interactionMoments;
     private List<GameResult>? allActivities;
+    private List<ChartSeries> _interactionSeries = new();
+    private string[] _interactionXAxisLabels = Array.Empty<string>();
+    private AxisChartOptions _interactionAxisOptions = new();
 
     protected override async Task OnInitializedAsync()
     {
         interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
         allActivities = await SqlActivitiesRepository.AllActivities(1);
+
+        BuildHourlyInteractionChart();
     }
 
     private async Task DeleteInteraction(int id)
@@ -161,5 +194,41 @@
         // Refresh list
         interactionMoments = await SqlInteractionMomentsRepository.SelectInteractionMoments(1);
     }
+    private void BuildHourlyInteractionChart()
+{
+    if (allActivities == null)
+        return;
 
+    // 24 hours
+    var hours = Enumerable.Range(0, 24).ToArray();
+
+    var finishedCounts = new double[24];
+    var missedCounts = new double[24];
+
+    foreach (var hour in hours)
+    {
+        finishedCounts[hour] = allActivities.Count(a =>
+            a.InteractionState == "Finished" && a.StartTime.Hour == hour);
+
+        missedCounts[hour] = allActivities.Count(a =>
+            a.InteractionState != "Finished" && a.StartTime.Hour == hour);
+    }
+
+    // X-axis labels: 0:00, 1:00, ..., 23:00
+    _interactionXAxisLabels = hours.Select(h => $"{h}:00").ToArray();
+
+    _interactionSeries = new List<ChartSeries>
+    {
+        new ChartSeries { Name = "Finished", Data = finishedCounts },
+        new ChartSeries { Name = "Not Finished", Data = missedCounts }
+    };
+
+    _interactionAxisOptions = new AxisChartOptions
+    {
+        MatchBoundsToSize = true,
+        XAxisLabelRotation=90
+        @* ShowXAxisLabels = true,
+        ShowYAxisLabels = true *@
+    };
+}
 }

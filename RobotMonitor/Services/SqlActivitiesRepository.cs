@@ -26,8 +26,8 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
         {
             var item = new QuestionAnswers
             {
-                QuizId=reader.GetInt32(0),
-                RobotId=reader.GetInt32(1),
+                QuizId = reader.GetInt32(0),
+                RobotId = reader.GetInt32(1),
                 Question = reader.GetString(2),
                 CorrectAnswer = reader.GetString(3),
                 WrongAnswer = reader.GetString(4),
@@ -41,7 +41,7 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
     {
         try
         {
-            Console.WriteLine(result);
+            Console.WriteLine(result.StartTime);
             using SqlConnection connection = new SqlConnection(_connectionString);
             await connection.OpenAsync();
 
@@ -55,15 +55,16 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
                 (
                     @RobotId,@Datum,@TijdstipStart,@TijdstipEind,@Soort,@GemReactieSnelheid,@CorrectBeantwoord,@Status, @SimonSaysAantal
                 )";
+
             command.Parameters.Add("@RobotId", SqlDbType.Int).Value = result.RobotId;
-            command.Parameters.Add("@Datum", SqlDbType.DateTime).Value = result.Date;
-            command.Parameters.Add("@TijdstipStart", SqlDbType.Time).Value = result.StartTime;
-            command.Parameters.Add("@TijdstipEind", SqlDbType.Time).Value = result.EndTime;
+            command.Parameters.Add("@Datum", SqlDbType.DateTime2).Value = result.Date;
+            command.Parameters.Add("@TijdstipStart", SqlDbType.DateTime2).Value = result.StartTime;
+            command.Parameters.Add("@TijdstipEind", SqlDbType.DateTime2).Value = result.EndTime;
             command.Parameters.Add("@Soort", SqlDbType.NVarChar, 50).Value = result.KindOfGame;
             command.Parameters.Add("@GemReactieSnelheid", SqlDbType.Decimal).Value = result.AverageReactionTimeMs;
-            command.Parameters.Add("@CorrectBeantwoord", SqlDbType.Decimal).Value = result.CorrectlyAnsweredPercentage;
+            command.Parameters.Add("@CorrectBeantwoord", SqlDbType.Decimal).Value = result.CorrectlyAnsweredPercentage.HasValue ? (object)result.CorrectlyAnsweredPercentage.Value : DBNull.Value;
             command.Parameters.Add("@Status", SqlDbType.NVarChar, 50).Value = result.InteractionState;
-            command.Parameters.Add("@SimonSaysAantal", SqlDbType.Int).Value = result.SimonSaysAmount;
+            command.Parameters.Add("@SimonSaysAantal", SqlDbType.Int).Value = result.SimonSaysAmount.HasValue ? (object)result.SimonSaysAmount.Value : DBNull.Value;
 
             await command.ExecuteNonQueryAsync();
         }
@@ -105,28 +106,28 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
             var item = new GameResult
             {
                 RobotId = reader.GetInt32(1),
-                Date=reader.GetDateTime(2),
-                StartTime = reader.GetTimeSpan(3),
-                EndTime = reader.GetTimeSpan(4),
+                Date = reader.GetDateTime(2),
+                StartTime = reader.GetDateTime(3),
+                EndTime = reader.GetDateTime(4),
                 KindOfGame = reader.GetString(5),
                 AverageReactionTimeMs = reader.GetDecimal(6),
                 InteractionState = reader.GetString(8),
             };
             if (!reader.IsDBNull(7))
             {
-                item.CorrectlyAnsweredPercentage=reader.GetDecimal(7);
+                item.CorrectlyAnsweredPercentage = reader.GetDecimal(7);
             }
             else
             {
-                item.CorrectlyAnsweredPercentage=-1;
+                item.CorrectlyAnsweredPercentage = -1;
             }
             if (!reader.IsDBNull(9))
             {
-                item.SimonSaysAmount=reader.GetInt32(9);
+                item.SimonSaysAmount = reader.GetInt32(9);
             }
             else
             {
-                item.SimonSaysAmount=-1;
+                item.SimonSaysAmount = -1;
             }
 
             allSelectedActivityData.Add(item);
@@ -203,28 +204,28 @@ public class SqlActivitiesRepository : ISqlActivitiesRepository
         {
             GameResult oneActivity = new GameResult
             {
-                Date=reader.GetDateTime(2),
-                StartTime=reader.GetTimeSpan(3),
-                EndTime=reader.GetTimeSpan(4),
-                KindOfGame=reader.GetString(5),
-                AverageReactionTimeMs=reader.GetDecimal(6),
-                InteractionState=reader.GetString(8),
+                Date = reader.GetDateTime(2),
+                StartTime = reader.GetDateTime(3),
+                EndTime = reader.GetDateTime(4),
+                KindOfGame = reader.GetString(5),
+                AverageReactionTimeMs = reader.GetDecimal(6),
+                InteractionState = reader.GetString(8),
             };
             if (!reader.IsDBNull(7))
             {
-                oneActivity.CorrectlyAnsweredPercentage=reader.GetDecimal(7);
+                oneActivity.CorrectlyAnsweredPercentage = reader.GetDecimal(7);
             }
             else
             {
-                oneActivity.CorrectlyAnsweredPercentage=-1;
+                oneActivity.CorrectlyAnsweredPercentage = -1;
             }
             if (!reader.IsDBNull(9))
             {
-                oneActivity.SimonSaysAmount=reader.GetInt32(9);
+                oneActivity.SimonSaysAmount = reader.GetInt32(9);
             }
             else
             {
-                oneActivity.SimonSaysAmount=-1;
+                oneActivity.SimonSaysAmount = -1;
             }
             activities.Add(oneActivity);
         }
@@ -236,11 +237,11 @@ public class GameResult
 {
     public int RobotId { get; set; }
     public DateTime Date { get; set; }
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
+    public DateTime StartTime { get; set; }
+    public DateTime EndTime { get; set; }
     public string? KindOfGame { get; set; }
     public decimal AverageReactionTimeMs { get; set; }
-    public decimal CorrectlyAnsweredPercentage { get; set; }
+    public decimal? CorrectlyAnsweredPercentage { get; set; }
     public string? InteractionState { get; set; }
     public int? SimonSaysAmount { get; set; }
 }
