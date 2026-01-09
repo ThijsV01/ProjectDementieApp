@@ -21,6 +21,12 @@
                     <strong>Settings</strong>
                 </div>
                 <div class="card-body">
+                    <div style="min-height: 70px;">
+                    <h6>Below I will show a table with all the robots that are currently in the system. You can only edit the 
+                        robot that is currently selected for the entire monitoringapp.
+                    </h6>
+                    </div>
+                    <hr style="margin: 1.5rem 0;" />
                     @if (robots == null)
                     {
                         <p><em>Loading...</em></p>
@@ -75,27 +81,53 @@
              2. INFORMATION
         ============================= -->
         <div class="col-lg-4">
-            <div class="card h-100 shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <strong>Information</strong>
-                </div>
-                <div class="card-body">
-                    <p>Last registered sensordata:
-                        @if (PIRMotionState == null || PIRMotionState.Count == 0)
-                        {
-                            <span>No sensor data available</span>
-                        }
-                        else
-                        {
-                            <span>
-                                @PIRMotionState[0].Datum.ToString("yyyy-MM-dd")
-                                @PIRMotionState[0].Tijdstip.ToString(@"hh\:mm\:ss")
-                            </span>
-                        }
-                    </p>
-                </div>
-            </div>
+    <div class="card h-100 shadow-sm">
+        <div class="card-header bg-primary text-white">
+            <strong>Information</strong>
         </div>
+        <div class="card-body">
+            <div style="min-height: 70px;">
+            <p>The last moment any sensordata was registered was:<br />
+                @if (PIRMotionState == null || PIRMotionState.Count == 0)
+                {
+                    <span>No sensor data available</span>
+                }
+                else
+                {
+                    <span>
+                        @PIRMotionState[0].Datum.ToString("dd-MM-yyyy")
+                        @PIRMotionState[0].Tijdstip.ToString(@"hh\:mm\:ss")
+                    </span>
+                }
+            </p>
+            </div>
+            <hr style="margin: 1.5rem 0;" />
+            <p>The navbar on the side of this app contains some buttons and pages I will explain below:</p>
+
+            <ul>
+                <li>
+                    <strong>Dashboard</strong> - Shows recent commands and two graphs with data from the past 2 weeks.
+                </li>
+                <li>
+                    <strong>Interactions</strong> - Shows all interactions and their timestamps. You can add or delete interaction moments to adapt it to a specific patient.
+                </li>
+                <li>
+                    <strong>Activities</strong> - Displays the available activities, how often they have been played, and their average results.
+                </li>
+                <li>
+                    <strong>Quiz Questions</strong> - Contains all quiz questions and answers. You can personalize these to better fit the patient.
+                </li>
+                <li>
+                    <strong>Sensor Data</strong> - Shows data from the ultrasonic distance sensor and PIR motion sensor. You can check recent values if sensors are not working as expected.
+                </li>
+                <li>
+                    <strong>Robot Controls</strong> - Buttons at the bottom allow you to start the robot (IDLE mode) or stop it (OFFLINE mode).  
+                    In OFFLINE mode, the robot will not drive at set interaction times. In IDLE mode, it will.
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
         <!-- ============================
              3. BATTERYSTATE
         ============================= -->
@@ -105,8 +137,27 @@
                     <strong>Batterystate</strong>
                 </div>
                 <div class="card-body">
+                    <div style="min-height: 70px;">
                     <i class="@BatteryIcon fa-3x" style="@BatteryColor font-size: 3rem;">@batteryStatus%</i>
+                    </div>
+                    <hr style="margin: 1.5rem 0;" />
+                    <p>The last time the batterystate was updated was: <br /> 
+                    @if (PIRMotionState == null || PIRMotionState.Count == 0)
+                        {
+                            <span>No sensor data available</span>
+                        }
+                        else
+                        {
+                            <span>
+                                @PIRMotionState[0].Datum.ToString("dd-MM-yyyy") at
+                                @PIRMotionState[0].Tijdstip.ToString(@"hh\:mm\:ss"). 
+                            </span>
+                        }
+                    In case this is not the current day and time, it means the robot is actually either at 0% and 
+                    it can't send any data, or the robot is switched off.
+                </p>
                 </div>
+                
             </div>
         </div>
     </div>

@@ -1,29 +1,67 @@
 ﻿@page "/"
 @using SimpleMqtt
 @inject ISqlCommandoRepository SqlCommandoRepository
+@inject ISqlActivitiesRepository SqlActivitiesRepository
 @rendermode InteractiveServer
 @inject SimpleMqttClient mqttClient
-
+<MudPopoverProvider />
 <PageTitle>Dashboard</PageTitle>
 <div class="container d-flex flex-column">
 
-    <!-- Bovenste twee blokken -->
-    <div class="row" style="height:55vh;">
-        <div class="col-6 p-1 h-100">
-            <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                <h4>Grafiek met recente interacties komt hier</h4>
-            </div>
-        </div>
+    <!-- Top two chart blocks -->
+<div class="row" style="height:55vh;">
+    <!-- Stacked Bar Chart -->
+    <div class="col-6 p-1 h-100">
+        <div class="card h-100 w-100 position-relative">
+            <MudPaper Style="flex:1; width:100%; height:90%; position:relative;">
+                <MudTooltip
+                    Text="This stacked bar chart shows the number of interactions over the past 14 days. 'Finished' = completed, 'Unfinished' = incomplete."
+                    Placement="Placement.Top"
+                    Class="chart-tooltip">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium"/>
+                </MudTooltip>
 
-        <div class="col-6 p-1 h-100">
-            <div class="card h-100 w-100 d-flex align-items-center justify-content-center text-center">
-                <h4>Grafiek met gemiddelde reactietijd en/of interactiestatus komt hier</h4>
-            </div>
+                <MudChart ChartType="ChartType.StackedBar" ChartSeries="@_series"
+                          XAxisLabels="@_xAxisLabels"
+                          Width="100%" Height="90%"
+                          AxisChartOptions="_axisChartOptions" />
+            </MudPaper>
         </div>
     </div>
 
+    <!-- Line Chart -->
+    <div class="col-6 p-1 h-100">
+        <div class="card h-100 w-100 position-relative">
+            <MudPaper Style="flex:1; width:100%; height:90%; position:relative;">
+                <MudTooltip
+                    Text="This line chart shows the average reaction time (in ms) per day over the past 14 days. Hover a point to see the exact value."
+                    Placement="Placement.Top"
+                    Class="chart-tooltip">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium"/>
+                </MudTooltip>
+
+                <MudChart ChartType="ChartType.Line" ChartSeries="@_seriesReactiontimes"
+                          XAxisLabels="@_xAxisLabelsReactiontimes"
+                          Width="100%" Height="90%"
+                          AxisChartOptions="_axisChartOptionsReactiontimes" />
+            </MudPaper>
+        </div>
+    </div>
+</div>
+
+<!-- Tooltip Styling -->
+<style>
+.chart-tooltip {
+    background-color: #1EC8A5 !important;
+    color: white !important;
+    font-size: 1.1rem !important;
+    padding: 0.8rem !important;
+    border-radius: 6px !important;
+    max-width: 300px !important;
+}
+</style>
     <!-- Commands onderaan -->
-    <div class="row mt-2" style="height:30vh;"> 
+    <div class="row mt-2" style="height:30vh;">
         <div class="col-12 p-1">
             <div class="card h-100 w-100 d-flex flex-column p-3">
 
@@ -66,9 +104,20 @@
 </div>
 @code {
     private List<CommandItem>? commands;
+    private List<GameResult>? allActivities;
+    private AxisChartOptions _axisChartOptions = new AxisChartOptions();
+    private AxisChartOptions _axisChartOptionsReactiontimes = new AxisChartOptions();
+    private List<ChartSeries> _series = new();
+    private List<ChartSeries> _seriesReactiontimes = new();
+    private string[] _xAxisLabels = Array.Empty<string>();
+    private string[] _xAxisLabelsReactiontimes = Array.Empty<string>();
     protected override async Task OnInitializedAsync()
     {
         commands = await SqlCommandoRepository.GetCommands(1);
+        allActivities = await SqlActivitiesRepository.AllActivities(1);
+
+        BuildInteractionsChart();
+        BuildInteractionsReactiontimesChart();
 
         mqttClient.OnMessageReceived += async (sender, args) =>
         {
@@ -80,6 +129,115 @@
                 commands = await SqlCommandoRepository.GetCommands(1);
                 await InvokeAsync(StateHasChanged);
             }
+        };
+    }
+    private void BuildInteractionsChart()
+    {
+        if (allActivities == null || !allActivities.Any())
+            return;
+
+        // Define the 14-day range
+        var today = DateTime.Today;
+        var fourteenDaysAgo = today.AddDays(-13);
+
+        // Adjust if your StartTime is UTC
+        var recentActivities = allActivities
+        .Where(a => a.StartTime.ToLocalTime().Date >= fourteenDaysAgo
+        && a.StartTime.ToLocalTime().Date <= today)
+        .ToList();
+
+        if (!recentActivities.Any())
+            return;
+
+        // Generate all past 14 days (even if some days have no activity)
+        var past14Days = Enumerable.Range(0, 14)
+        .Select(i => fourteenDaysAgo.AddDays(i))
+        .ToList();
+
+        var finishedCounts = new double[past14Days.Count];
+        var missedCounts = new double[past14Days.Count];
+
+        for (int i = 0; i < past14Days.Count; i++)
+        {
+            var day = past14Days[i];
+
+            // Activities for that specific day
+            var dayActivities = recentActivities
+            .Where(a => a.StartTime.ToLocalTime().Date == day)
+            .ToList();
+
+            finishedCounts[i] = dayActivities.Count(a => a.InteractionState == "Finished");
+            missedCounts[i] = dayActivities.Count(a => a.InteractionState != "Finished");
+        }
+
+        // X-axis labels: all 14 days
+        _xAxisLabels = past14Days.Select(d => d.ToString("dd-MM")).ToArray();
+
+        // Chart series
+        _series = new List<ChartSeries>
+{
+new ChartSeries
+{
+Name = "Finished interactions",
+Data = finishedCounts
+},
+new ChartSeries
+{
+Name = "Unfinished interactions",
+Data = missedCounts
+}
+};
+
+        // Chart options
+        _axisChartOptions = new AxisChartOptions
+        {
+            MatchBoundsToSize = true,
+            XAxisLabelRotation = 45 // rotated for readability
+        };
+    }
+    private void BuildInteractionsReactiontimesChart()
+    {
+        if (allActivities == null || !allActivities.Any())
+            return;
+
+        var fourteenDaysAgo = DateTime.Today.AddDays(-14);
+
+        var recentActivities = allActivities
+        .Where(a =>
+        a.Date.Date >= fourteenDaysAgo &&
+        a.AverageReactionTimeMs > 0)
+        .ToList();
+
+        if (!recentActivities.Any())
+            return;
+
+        var grouped = recentActivities
+        .GroupBy(a => a.Date.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => new
+        {
+            Date = g.Key,
+            AverageReactionTime = g.Average(a => a.AverageReactionTimeMs)
+        })
+        .ToList();
+
+        _xAxisLabelsReactiontimes = grouped
+        .Select(g => g.Date.ToString("dd-MM"))
+        .ToArray();
+
+        _seriesReactiontimes = new List<ChartSeries>
+{
+new ChartSeries
+{
+Name = "Average Reaction Time (ms)",
+Data = grouped.Select(g => (double)g.AverageReactionTime).ToArray()
+}
+};
+
+        _axisChartOptionsReactiontimes = new AxisChartOptions
+        {
+            MatchBoundsToSize = true,
+            XAxisLabelRotation = 45,
         };
     }
 }

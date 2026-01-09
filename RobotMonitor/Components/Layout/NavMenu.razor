@@ -6,49 +6,57 @@
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <NavLink class="nav-link" href="info&settings" title="Info & Settings">
-            <i class="fas fa-info-circle" style="color:rgb(0, 79, 198);">Info & Settings</i>
+           <i class="fas fa-info-circle me-2" style="color:white;"></i>
+            <span class="fw-bold"style="color:white;">Info & Settings</span>
         </NavLink>
     </div>
 </div>
 
 <input type="checkbox" title="Navigation menu" class="navbar-toggler" />
 
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
+<div class="nav-scrollable d-flex flex-column" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="nav flex-column flex-grow-1">
+        <!-- Nav items -->
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Dashboard
+                <span class="bi bi-house-door-fill-nav-menu fw-bold" aria-hidden="true"></span><div class="fw-bold">Dashboard</div> 
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="interactions">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Interactions
+                <span class="bi bi-list-nested-nav-menu fw-bold" aria-hidden="true"></span> <div class="fw-bold">Interactions</div>
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="activities">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Activities
+                <span class="bi bi-list-nested-nav-menu fw-bold" aria-hidden="true"></span> <div class="fw-bold">Activities</div>
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="quizquestions">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Quiz questions
+                <span class="bi bi-list-nested-nav-menu fw-bold" aria-hidden="true"></span> <div class="fw-bold">Quiz questions</div>
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="sensordata">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Sensor data
+                <span class="bi bi-list-nested-nav-menu fw-bold" aria-hidden="true"></span> <div class="fw-bold">Sensor data</div>
             </NavLink>
-        </div>
-        <div class="px-3 mb-3">
-            <button class="btn btn-success btn-lg w-100" @onclick="StartRobot">Start Robot</button>
-        </div>
-
-        <div class="px-3 mb-2">
-            <button class="btn btn-danger btn-lg w-100" @onclick="StopRobot">Stop Robot</button>
         </div>
     </nav>
 
+    <div class="px-3 mt-auto mb-6 d-flex flex-column">
+  <button class="btn fw-bold w-100 mb-4" 
+        style="padding: 1rem; background-color: #218838; border: 2px solid #1c6236; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.25);" 
+        @onclick="StartRobot">
+    Start Robot
+</button>
+
+<button class="btn fw-bold w-100" 
+        style="padding: 1rem; background-color: #c82333; border: 2px solid #892029; color: white; box-shadow: 0 3px 6px rgba(0,0,0,0.25);" 
+        @onclick="StopRobot">
+    Stop Robot
+</button>
+</div>
 </div>
 
 

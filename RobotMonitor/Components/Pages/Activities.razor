@@ -5,194 +5,213 @@
 @using System.Text.Json
 @inject SimpleMqttClient mqttClient
 @rendermode InteractiveServer
+<MudPopoverProvider />
+
 <PageTitle>Activities</PageTitle>
+
 <div class="container d-flex flex-column">
     <div class="row h-100">
 
-        <!-- Linker kolom -->
-        <div class="col-8 d-flex flex-column h-100">
+        <!-- Left column -->
+        <div class="col-8">
 
-            <!-- Twee blokken bovenaan -->
-            <div class="row" style="height:35vh;">
+            <!-- Top blocks -->
+            <div class="p-1">
+                <div class="row">
 
-                <!-- Activities lijst -->
-                <div class="col-3 p-1">
-                    <div class="card h-100 w-100 p-2">
-                        @if (activities == null)
-                        {
-                            <p><em>Loading...</em></p>
-                        }
-                        else if (activities.Count == 0)
-                        {
-                            <p>No activities found.</p>
-                        }
-                        else
-                        {
+                    <!-- Activities list -->
+                    <div class=" card p-1 col-3" style="height:30vh">
+                        <div>
+
                             <!-- Header -->
-                            <table class="table table-striped mb-0">
-                                <thead>
-                                    <tr>
-                                        <th>All activities</th>
-                                    </tr>
-                                </thead>
-                            </table>
+                            <div class="card-header bg-primary text-white fw-bold">
+                                All activities
+                            </div>
 
-                            <!-- Scrollbare body -->
-                            <div style="max-height: 28vh; overflow-y: auto;">
-                                <table class="table table-striped mb-0">
-                                    <tbody>
+                            <!-- Body -->
+                            <div class="card-body" style="overflow-y: auto;">
+                                @if (activities == null)
+                                {
+                                    <div class="p-2"><em>Loading...</em></div>
+                                }
+                                else if (activities.Count == 0)
+                                {
+                                    <div class="p-2">No activities found.</div>
+                                }
+                                else
+                                {
+                                    <ul class="list-group list-group-flush">
                                         @foreach (string activity in activities)
                                         {
-                                            <tr style="cursor:pointer"
-                                                class="@(activity == selectedActivity ? "table-primary" : "")"
-                                                @onclick="() => GetSelectedActivityData(activity)">
-                                                <td>@activity</td>
-                                            </tr>
+                                            <li class="list-group-item activity-item @(activity == selectedActivity ? "list-group-item-primary fw-bold" : "")"
+                                                style="cursor:pointer" @onclick="() => GetSelectedActivityData(activity)">
+                                                @activity
+                                            </li>
                                         }
-                                    </tbody>
-                                </table>
+                                    </ul>
+                                }
                             </div>
-                        }
+
+                        </div>
                     </div>
-                </div>
 
-                <!-- Activity details -->
-                <div class="col-9 p-1">
-                    <div class="card h-100 w-100 p-2">
-                        @if (selectedActivity == "Quiz")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Donut" InputData="@data" InputLabels="@labels" Width=100%;
-                                    Height=30%;>
-                                </MudChart>
-                            </MudPaper>
-                        }
-                        @if (selectedActivity == "Simon Says")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Bar" ChartSeries="@_seriesSimonSays"
-                                    XAxisLabels="@_xAxisLabelsSimonSays" AxisChartOptions="_axisChartOptions" Width=100%;
-                                    Height=70%; />
-                            </MudPaper>
-                        }
-
-                        @if (selectedActivity == "Reaction Game")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Donut" InputData="@data" InputLabels="@labels" Width=100%;
-                                    Height=30%;>
-                                </MudChart>
-                            </MudPaper>
-                        }
-                        @if (selectedActivity == "No activity selected")
-                        {
-                            <p>Select an activity top left to show its data.</p>
-                        }
+                    <!-- Activity details -->
+                    <div class=" card p-1 col-9" style="height:30vh">
+                        <div class="h-100 w-100">
+                            @if (selectedActivity == "Quiz")
+                            {
+                                <MudPaper Width=100%; Height=100%;>
+                                    <MudTooltip
+                                        Text="This donut chart shows the average percentage of correctly answered questions. Hover over the chart to see the exact values."
+                                        Placement="Placement.Top" Class="chart-tooltip">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium" />
+                                    </MudTooltip>
+                                    <MudChart ChartType="ChartType.Donut" InputData="@data" InputLabels="@labels"
+                                        Width=100%; Height=70%;>
+                                    </MudChart>
+                                </MudPaper>
+                            }
+                            @if (selectedActivity == "Simon Says")
+                            {
+                                <MudPaper Width=100%; Height=100%;>
+                                    <MudTooltip
+                                        Text="This stacked bar chart displays the number of correct answers for the activity, along with how many times each score was achieved by the user."
+                                        Placement="Placement.Top" Class="chart-tooltip">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium" />
+                                    </MudTooltip>
+                                    <MudChart ChartType="ChartType.Bar" ChartSeries="@_seriesSimonSays"
+                                        XAxisLabels="@_xAxisLabelsSimonSays" AxisChartOptions="_axisChartOptions"
+                                        Width=100%; Height=70%; />
+                                </MudPaper>
+                            }
+                            @if (selectedActivity == "Reaction Game")
+                            {
+                                <MudPaper Width=100%; Height=100%;>
+                                    <MudTooltip
+                                        Text="This donut chart shows the average percentage of correctly answered questions. Hover over the chart to see the exact values."
+                                        Placement="Placement.Top" Class="chart-tooltip">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium" />
+                                    </MudTooltip>
+                                    <MudChart ChartType="ChartType.Donut" InputData="@data" InputLabels="@labels"
+                                        Width=100%; Height=70%;>
+                                    </MudChart>
+                                </MudPaper>
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Groot blok onderaan -->
-            <div class="row">
-                <div class="col-12 p-1" style="height:52vh;">
-                    <div class="card h-100 w-100">
+            <!-- Bottom large block -->
+            <div>
+                <div class="row">
+                    <div class="col-12 p-1" style="height:52vh;">
+                        <div class="card h-100 w-100">
 
-                        @if (selectedActivity == "No activity selected")
-                        {
-                            <p>Select an activity top left to show its data.</p>
-                        }
-                        @if (selectedActivity == "Simon Says")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Line" ChartSeries="@_seriesForSpecificGame"
-                                    XAxisLabels="@_xAxisLabelsForSpecificGame" Width=100%; Height=83%;
-                                    AxisChartOptions="_axisChartOptionsForSpecificGame" />
-                            </MudPaper>
-                        }
+                            @if (selectedActivity != null)
+                            {
+                                <MudPaper Style="flex:1" Width=100%; Height=100%;>
+                                    <MudTooltip
+                                        Text="This line chart displays the average reaction time (ms) for the selected activity, shown for each day recorded in the database."
+                                        Placement="Placement.Top" Class="chart-tooltip">
+                                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium" />
+                                    </MudTooltip>
+                                    <MudChart ChartType="ChartType.Line" ChartSeries="@_seriesForSpecificGame"
+                                        XAxisLabels="@_xAxisLabelsForSpecificGame" Width=100%; Height=83%;
+                                        AxisChartOptions="_axisChartOptionsForSpecificGame" />
+                                </MudPaper>
+                            }
+                            else
+                            {
+                                <p>Select an activity top left to show its data.</p>
+                            }
 
-                        @if (selectedActivity == "Reaction Game")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Line" ChartSeries="@_seriesForSpecificGame"
-                                    XAxisLabels="@_xAxisLabelsForSpecificGame" Width=100%; Height=83%;
-                                    AxisChartOptions="_axisChartOptionsForSpecificGame" />
-                            </MudPaper>
-                        }
-                        @if (selectedActivity == "Quiz")
-                        {
-                            <MudPaper Style="flex:1" Width=100%; Height=100%;>
-                                <MudChart ChartType="ChartType.Line" ChartSeries="@_seriesForSpecificGame"
-                                    XAxisLabels="@_xAxisLabelsForSpecificGame" Width=100%; Height=83%;
-                                    AxisChartOptions="_axisChartOptionsForSpecificGame" />
-                            </MudPaper>
-                        }
-
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Rechter kolom -->
-        <div class="col-4 p-1" style="height:87vh;">
+        <!-- Right column -->
+        <div class="col-4 p-1">
             <div class="card h-100 w-100">
                 <MudPaper Style="flex:1" Width=100%; Height=100%;>
+                    <MudTooltip
+                        Text="This stacked bar chart shows how many times each activity has been played. Hover over the bars to see the exact counts."
+                        Placement="Placement.Top" Class="chart-tooltip">
+                        <MudIcon Icon="@Icons.Material.Filled.Info" Size="Size.Medium" />
+                    </MudTooltip>
                     <MudChart ChartType="ChartType.Bar" ChartSeries="@_series" XAxisLabels="@_xAxisLabels"
-                        AxisChartOptions="_axisChartOptions" Width=100%; Height=90%; />
+                        AxisChartOptions="_axisChartOptions" Width=90%; Height=90%; />
                 </MudPaper>
             </div>
         </div>
-
     </div>
 </div>
+<style>
+    .chart-tooltip {
+        background-color: #1EC8A5 !important;
+        color: white !important;
+        font-size: 1.1rem !important;
+        padding: 0.8rem !important;
+        border-radius: 6px !important;
+        max-width: 300px !important;
+    }
+</style>
 @code {
     private List<string>? activities;
-    private string selectedActivity = "No activity selected";
+    private string? selectedActivity;
     private List<GameResult>? selectedActivityData;
     private List<GameResult>? allActivities;
-    @* private decimal? AverageReactionTime;
-    private decimal? AverageCorrectAnsweredPercentage;
-    private double? AverageSimonSaysAmount; *@
+
     private AxisChartOptions _axisChartOptions = new AxisChartOptions();
     private AxisChartOptions _axisChartOptionsForSpecificGame = new AxisChartOptions();
+
     private List<ChartSeries> _series = new();
     private List<ChartSeries> _seriesForSpecificGame = new();
     private List<ChartSeries> _seriesSimonSays = new();
+
     private string[] _xAxisLabels = Array.Empty<string>();
     private string[] _xAxisLabelsForSpecificGame = Array.Empty<string>();
     private string[] _xAxisLabelsSimonSays = Array.Empty<string>();
+
     public double[] data = [];
     public string[] labels = [];
+
     protected override async Task OnInitializedAsync()
     {
         activities = await SqlActivitiesRepository.SelectActivities(1);
-        selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
+
+        if (activities != null && activities.Any())
+        {
+            selectedActivity = activities[0]; // auto-select first activity
+            selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
+        }
+
         allActivities = await SqlActivitiesRepository.AllActivities(1);
 
         BuildMostPlayedActivitiesChart();
+        BuildSelectedActivityGraph(selectedActivityData!);
     }
+
     private async Task GetSelectedActivityData(string activity)
     {
         selectedActivity = activity;
         selectedActivityData = await SqlActivitiesRepository.GetSelectedActivityData(1, selectedActivity);
         BuildSelectedActivityGraph(selectedActivityData);
+        StateHasChanged();
     }
+
     private void BuildMostPlayedActivitiesChart()
     {
-        if (allActivities == null || !allActivities.Any())
-            return;
+        if (allActivities == null || !allActivities.Any()) return;
 
         var grouped = allActivities
         .GroupBy(a => a.KindOfGame!)
-        .Select(g => new
-        {
-            Activity = g.Key,
-            Count = g.Count()
-        })
+        .Select(g => new { Activity = g.Key, Count = g.Count() })
         .ToList();
 
-        _xAxisLabels = grouped
-        .Select(g => g.Activity)
-        .ToArray();
+        _xAxisLabels = grouped.Select(g => g.Activity).ToArray();
 
         _series = new List<ChartSeries>
 {
@@ -200,73 +219,60 @@ new ChartSeries
 {
 Name = "Amount of times played",
 Data = grouped.Select(g => (double)g.Count).ToArray()
-
 }
 };
 
         _axisChartOptions.MatchBoundsToSize = true;
     }
+
     private void BuildSelectedActivityGraph(List<GameResult> selectedActivityData)
     {
-        if (selectedActivityData == null || !selectedActivityData.Any())
-            return;
+        data=[];
+        labels=[];
+        if (selectedActivityData == null || !selectedActivityData.Any()) return;
 
         var grouped = selectedActivityData
         .OrderBy(g => g.Date)
-        .Select(g => new
-        {
-            Date = g.Date,
-            Average = g.AverageReactionTimeMs
-
-        })
+        .Select(g => new { Date = g.Date, Average = g.AverageReactionTimeMs })
         .ToList();
 
-        _xAxisLabelsForSpecificGame = grouped
-        .Select(g => g.Date.ToString("dd-MM-yyyy"))
-        .ToArray();
+        _xAxisLabelsForSpecificGame = grouped.Select(g => g.Date.ToString("dd-MM-yyyy")).ToArray();
 
         _seriesForSpecificGame = new List<ChartSeries>
 {
 new ChartSeries
 {
-Name = "Average reactiontime (ms) for every moment the game has been played",
+Name = "Average reaction time (ms)",
 Data = grouped.Select(g => (double)g.Average).ToArray()
-
 }
 };
 
         _axisChartOptionsForSpecificGame.MatchBoundsToSize = true;
-        if (selectedActivityData[0].KindOfGame == "Quiz" || selectedActivityData[0].KindOfGame == "ReactionGame")
-        {
-            labels = [ "Correctly Answered Percentage", "Wrongly answered percentage" ];
 
-            // Safely handle nullable decimals, ignoring nulls
+        if (selectedActivityData[0].KindOfGame == "Quiz" || selectedActivityData[0].KindOfGame == "Reaction Game")
+        {
+            labels = new[] { "Correctly Answered Percentage", "Wrongly Answered Percentage" };
+
             var validPercentages = selectedActivityData
             .Where(r => r.CorrectlyAnsweredPercentage.HasValue)
             .Select(r => r.CorrectlyAnsweredPercentage!.Value);
 
             decimal avgCorrect = validPercentages.Any() ? validPercentages.Average() : 0m;
-
             decimal avgWrong = 100 - avgCorrect;
 
-            data = [(double)avgCorrect, (double)avgWrong];
+            data = new[] { (double)avgCorrect, (double)avgWrong };
         }
+
         if (selectedActivityData[0].KindOfGame == "Simon Says")
         {
             var groupedSteps = selectedActivityData
             .GroupBy(g => g.SimonSaysAmount)
-            .Select(g => new
-            {
-                Amount = g.Key,
-                Count = g.Count()
-            })
+            .Select(g => new { Amount = g.Key, Count = g.Count() })
             .OrderBy(g => g.Amount)
             .ToList();
 
-            // X-axis labels = the step amounts
             _xAxisLabelsSimonSays = groupedSteps.Select(g => g.Amount.ToString()!).ToArray();
 
-            // Series = frequency (Y-axis values)
             _seriesSimonSays = new List<ChartSeries>
 {
 new ChartSeries
@@ -275,6 +281,7 @@ Name = "Amount of times amount of steps occurs",
 Data = groupedSteps.Select(g => (double)g.Count).ToArray()
 }
 };
+
             _axisChartOptionsForSpecificGame.MatchBoundsToSize = true;
         }
     }

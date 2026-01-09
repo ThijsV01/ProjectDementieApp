@@ -1,79 +1,104 @@
 @page "/sensordata"
 @using SimpleMqtt
 @inject ISqlSensorRepository SqlSensorRepository
-@rendermode InteractiveServer
 @inject SimpleMqttClient mqttClient
+@rendermode InteractiveServer
 
-<PageTitle>Sensor data</PageTitle>
-@if (ObstacleDistances == null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (ObstacleDistances.Count == 0)
-{
-    <p>No sensor data found.</p>
-}
-else
-{
-    <table class="table table-striped mb-0" style="height:32vh;">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Obstacle distance</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (SensorMeting meting in ObstacleDistances)
-            {
-                <tr>
-                    <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
-                    <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                    <td>@meting.Waarde cm</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+<PageTitle>Sensor Data</PageTitle>
 
-@if (PIRMotionState == null)
-{
-    <p><em>Loading...</em></p>
-}
-else if (PIRMotionState.Count == 0)
-{
-    <p>No sensor data found.</p>
-}
-else
-{
-    <table class="table table-striped mb-0" style="height:32vh;">
-        <thead>
-            <tr>
-                <th>Date</th>
-                <th>Time</th>
-                <th>Detection state</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (SensorMeting meting in PIRMotionState)
+<div class="py-3">
+
+    <div class="card mb-3">
+        <div class="card-header text-white bg-primary">
+            <strong>Obstacle Distances</strong>
+        </div>
+        <div class="card-body p-0 table-wrapper">
+            @if (ObstacleDistances == null)
             {
-                <tr>
-                    <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
-                    <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
-                    @if(meting.Waarde==0){
-                        <td>No human detected</td>
-                    }else if(meting.Waarde==1){
-                        <td>Human detected</td>
-                    }
-                    
-                </tr>
+                <p class="text-center my-3"><em>Loading...</em></p>
             }
-        </tbody>
-    </table>
-}
+            else if (ObstacleDistances.Count == 0)
+            {
+                <p class="text-center my-3">No sensor data found.</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover mb-0 fixed-table">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th style="width: 33%;">Date</th>
+                            <th style="width: 33%;">Time</th>
+                            <th style="width: 34%;">Obstacle Distance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var meting in ObstacleDistances)
+                        {
+                            <tr class="sensor-row">
+                                <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
+                                <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                                <td>@meting.Waarde cm</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header text-white bg-primary">
+            <strong>PIR Motion Detection</strong>
+        </div>
+        <div class="card-body p-0 table-wrapper">
+            @if (PIRMotionState == null)
+            {
+                <p class="text-center my-3"><em>Loading...</em></p>
+            }
+            else if (PIRMotionState.Count == 0)
+            {
+                <p class="text-center my-3">No sensor data found.</p>
+            }
+            else
+            {
+                <table class="table table-striped table-hover mb-0 fixed-table">
+                    <thead class="table-light sticky-top">
+                        <tr>
+                            <th style="width: 33%;">Date</th>
+                            <th style="width: 33%;">Time</th>
+                            <th style="width: 34%;">Detection State</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var meting in PIRMotionState)
+                        {
+                            <tr class="sensor-row">
+                                <td>@meting.Datum.ToString("dd-MM-yyyy")</td>
+                                <td>@meting.Tijdstip.ToString(@"hh\:mm\:ss")</td>
+                                <td>
+                                    @if (meting.Waarde == 0)
+                                    {
+                                        <span>No human detected</span>
+                                    }
+                                    else if (meting.Waarde == 1)
+                                    {
+                                        <span>Human detected</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+
+</div>
+
 @code {
     private List<SensorMeting>? ObstacleDistances;
     private List<SensorMeting>? PIRMotionState;
+
     protected override async Task OnInitializedAsync()
     {
         ObstacleDistances = await SqlSensorRepository.SelectSensorDataObstacleDistance(1);
@@ -81,8 +106,6 @@ else
 
         mqttClient.OnMessageReceived += async (sender, args) =>
         {
-            Console.WriteLine($"Topic: {args.Topic} Message: {args.Message}");
-
             if (args.Topic!.StartsWith("robot/2242722/sensor/"))
             {
                 await Task.Delay(50);
